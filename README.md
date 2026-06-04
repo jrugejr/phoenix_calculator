@@ -21,7 +21,7 @@ Built by a sign painter for sign painters.
 
 ## Current Version
 
-### Version 1.0
+### Version 1.0.1
 
 * Live web application
 * Installable on Android and iPhone
@@ -32,7 +32,7 @@ Built by a sign painter for sign painters.
 
 ## Changelog
 
-### v1.0.1
+### v1.0
 
 - Improved mobile layout
 - Refined color palette
