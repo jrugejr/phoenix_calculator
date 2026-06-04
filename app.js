@@ -248,7 +248,10 @@ function calculateLayout(copyText, targetWidth) {
 		  const extraPerSpaceInSixteenths = extraPerSpace * 16;
 
 		  if (Number.isInteger(extraPerSpaceInSixteenths)) {
-			letterSpacing += extraPerSpace;
+			const improvedSpacing = letterSpacing + extraPerSpace;
+
+			if (improvedSpacing <= counter) {
+				letterSpacing = improvedSpacing;
 		  }
 		}
 	  }
@@ -291,6 +294,7 @@ function calculateLayout(copyText, targetWidth) {
           totalWordSpace,
           finalWidth,
           leftover,
+		  sideMargin: leftover / 2,
           counterRatio,
           letterSpacingToCounterRatio: counter ? letterSpacing / counter : 0
         }
@@ -351,6 +355,8 @@ function renderLayout(result) {
   document.getElementById("letterMassOutput").textContent = formatInches(layout.letterMass);
   document.getElementById("finalWidthOutput").textContent = formatInches(layout.finalWidth);
   document.getElementById("leftoverOutput").textContent = formatInches(layout.leftover);
+  document.getElementById("sideMarginOutput").textContent =
+  `${formatInches(layout.sideMargin)} each`;
 
   const wordSpaceRow = document.getElementById("wordSpaceRow");
 
@@ -371,7 +377,8 @@ function renderLayout(result) {
     why += `<p>Word spacing is one normal Phoenix letter: <strong>2 stems + 1 counter.</strong></p>`;
   }
 
-  why += `<p>All measurements are yardstick-friendly 1/8 inch marks.</p>`;
+  why += `<p>Any leftover width is split into side margins.</p>`;
+  why += `<p>All major measurements are yardstick-friendly 1/8 inch marks.</p>`;
 
   document.getElementById("whyOutput").innerHTML = why;
   document.getElementById("breakdownOutput").innerHTML = renderBreakdown(result.letters);
