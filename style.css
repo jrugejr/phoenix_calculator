@@ -27,6 +27,7 @@ body {
 .app {
   width: 100%;
   max-width: 720px;
+  padding-top: 20px;
 }
 
 header {
@@ -38,8 +39,8 @@ header {
 h1 {
   margin: 0 0 8px;
   font-size: clamp(2rem, 7vw, 4rem);
-  line-height: 0.9;
-  letter-spacing: -0.05em;
+  line-height: 0.85;
+  letter-spacing: -0.06em;
   text-transform: uppercase;
 }
 
@@ -51,7 +52,7 @@ h2 {
 
 .subtitle {
   margin: 0;
-  color: var(--muted);
+  color: var(--text);
   font-size: 1rem;
 }
 
@@ -61,7 +62,7 @@ h2 {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 12px;
-  color: var(--muted);
+  color: var(--text);
   font-size: 0.95rem;
 }
 
@@ -73,14 +74,19 @@ main {
 .card {
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 18px;
   padding: 18px;
+}
+
+.input-card {
+  display: grid;
+  gap: 16px;
 }
 
 label {
   display: block;
   margin-bottom: 6px;
-  color: var(--muted);
+  color: var(--text);
   font-weight: 700;
   text-transform: uppercase;
   font-size: 0.8rem;
@@ -92,7 +98,7 @@ input {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 14px;
-  background: #0b0b0b;
+  background: #050505;
   color: var(--text);
   font-size: 1.1rem;
 }
@@ -110,7 +116,7 @@ input:focus {
 button {
   width: 100%;
   border: 0;
-  border-radius: 12px;
+  border-radius: 18px;
   padding: 16px;
   background: linear-gradient(90deg, var(--accent-soft), var(--accent));
   color: #f4f7fb;
@@ -119,19 +125,57 @@ button {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;
+  box-shadow: 0 0 20px rgba(56, 168, 232, 0.15);
 }
 
 button:active {
   transform: translateY(1px);
 }
 
+.counter-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.counter-option {
+  background: #050505;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  box-shadow: none;
+  border-radius: 14px;
+  padding: 12px;
+  font-size: 0.85rem;
+}
+
+.counter-option.active {
+  background: linear-gradient(90deg, var(--accent-soft), var(--accent));
+  color: #f4f7fb;
+  border-color: var(--accent);
+}
+
+.helper-text {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+
 .heckle {
   color: var(--muted);
   font-weight: 400;
   font-style: italic;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
   min-height: 1.5em;
   opacity: 0.85;
+  line-height: 1.35;
+}
+
+.inline-heckle {
+  margin-top: 2px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
 }
 
 .error {
@@ -197,17 +241,13 @@ button:active {
 
 footer {
   margin-top: 24px;
-  color: var(--muted);
+  color: var(--text);
   font-size: 0.9rem;
   text-align: center;
 }
 
 footer strong {
   color: var(--text);
-}
-
-a {
-  color: var(--accent);
 }
 
 .venmo-button {
@@ -227,17 +267,8 @@ a {
   transform: translateY(1px);
 }
 
-button {
-  border-radius: 18px;
-  box-shadow: 0 0 20px rgba(56, 168, 232, 0.15);
-}
-
-.card {
-  border-radius: 18px;
-}
-
-.heckle {
-  line-height: 1.35;
+a {
+  color: var(--accent);
 }
 
 @media (max-width: 520px) {
@@ -320,15 +351,4 @@ button {
   .install-note {
     display: none;
   }
-}
-
-.input-card {
-  display: grid;
-  gap: 16px;
-}
-
-.inline-heckle {
-  margin-top: 2px;
-  padding-top: 14px;
-  border-top: 1px dashed var(--border);
 }

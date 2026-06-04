@@ -6,19 +6,10 @@
 
   <title>Phoenix Layout Calculator</title>
 
-  <!-- PWA files will be added later. -->
-  <!-- <link rel="manifest" href="manifest.json" /> -->
-
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#38a8e8" />
   <link rel="stylesheet" href="style.css" />
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#f0b44c">
 </head>
-
-<script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./service-worker.js");
-}
-</script>
 
 <body>
   <div class="app">
@@ -35,121 +26,144 @@ if ("serviceWorker" in navigator) {
       </div>
     </header>
 
-<main>
-  <section class="card input-card">
-    <div class="field-grid">
-      <div>
-        <label for="copyInput">Enter 1 or 2 Words to Calculate</label>
-        <input
-          id="copyInput"
-          type="text"
-          placeholder="SIGNS or SHOE REPAIR"
-          autocomplete="off"
-        />
-      </div>
-
-      <div>
-        <label for="widthInput">Target Width in Inches</label>
-        <input
-          id="widthInput"
-          type="number"
-          step="0.125"
-          min="0"
-          placeholder="18"
-        />
-      </div>
+    <main>
+      <section class="card input-card">
+        <div class="field-grid">
           <div>
-            <label for="counterStyle">Counter Style</label>
-            <select id="counterStyle">
-              <option value="smaller">Smaller counters, traditional</option>
-              <option value="equal">Equal counters, practical</option>
-            </select>
+            <label for="copyInput">Enter 1 or 2 Words to Calculate</label>
+            <input
+              id="copyInput"
+              type="text"
+              placeholder="SIGNS or SHOE REPAIR"
+              autocomplete="off"
+            />
           </div>
 
+          <div>
+            <label for="widthInput">Target Width in Inches</label>
+            <input
+              id="widthInput"
+              type="number"
+              step="0.125"
+              min="0"
+              placeholder="18"
+            />
+          </div>
 
-      <button id="calculateButton" type="button">
-        Calculate
-      </button>
-    </div>
+          <div>
+            <label>Counter Style</label>
 
-    <div id="heckle" class="heckle inline-heckle">
-      Enter some copy. Let the goblin do the shameful math.
-    </div>
+            <div class="counter-toggle" role="group" aria-label="Counter Style">
+              <button
+                class="counter-option active"
+                type="button"
+                data-counter-style="smaller"
+              >
+                Traditional
+              </button>
 
-    <div id="error" class="error"></div>
-  </section>
+              <button
+                class="counter-option"
+                type="button"
+                data-counter-style="equal"
+              >
+                Practical
+              </button>
+            </div>
 
-  <section id="results" class="card results">
-    <h2>Recommended Layout</h2>
+            <p class="helper-text">
+              Traditional uses smaller counters. Practical uses equal counters for small copy.
+            </p>
+          </div>
 
-    <div class="result-grid">
-      <div class="result-row">
-        <strong>Stem</strong>
-        <span id="stemOutput">-</span>
-      </div>
+          <button id="calculateButton" type="button">
+            Calculate
+          </button>
+        </div>
 
-      <div class="result-row">
-        <strong>Counter</strong>
-        <span id="counterOutput">-</span>
-      </div>
+        <div id="heckle" class="heckle inline-heckle">
+          Enter some copy. Let the goblin do the shameful math.
+        </div>
 
-      <div class="result-row">
-        <strong>Letter Space</strong>
-        <span id="letterSpaceOutput">-</span>
-      </div>
+        <div id="error" class="error"></div>
+      </section>
 
-      <div class="result-row" id="wordSpaceRow">
-        <strong>Word Space</strong>
-        <span id="wordSpaceOutput">-</span>
-      </div>
+      <section id="results" class="card results">
+        <h2>Recommended Layout</h2>
 
-      <div class="result-row">
-        <strong>Letter Mass</strong>
-        <span id="letterMassOutput">-</span>
-      </div>
+        <div class="result-grid">
+          <div class="result-row">
+            <strong>Stem</strong>
+            <span id="stemOutput">-</span>
+          </div>
 
-      <div class="result-row">
-        <strong>Final Width</strong>
-        <span id="finalWidthOutput">-</span>
-      </div>
+          <div class="result-row">
+            <strong>Counter</strong>
+            <span id="counterOutput">-</span>
+          </div>
 
-      <div class="result-row">
-        <strong>Leftover</strong>
-        <span id="leftoverOutput">-</span>
-      </div>
-    </div>
+          <div class="result-row">
+            <strong>Letter Space</strong>
+            <span id="letterSpaceOutput">-</span>
+          </div>
 
-	  <div class="result-row">
-  		<strong>Side Margin</strong>
- 		<span id="sideMarginOutput">-</span>
-	</div>
+          <div class="result-row" id="wordSpaceRow">
+            <strong>Word Space</strong>
+            <span id="wordSpaceOutput">-</span>
+          </div>
 
-    <div class="why" id="whyOutput"></div>
+          <div class="result-row">
+            <strong>Letter Mass</strong>
+            <span id="letterMassOutput">-</span>
+          </div>
 
-    <details class="details">
-      <summary>Show letter breakdown</summary>
-      <div id="breakdownOutput" class="breakdown"></div>
-    </details>
-  </section>
-</main>
+          <div class="result-row">
+            <strong>Final Width</strong>
+            <span id="finalWidthOutput">-</span>
+          </div>
 
-	<footer>
-	  <p>
-		<strong>Built by JJ Ruge Sign Co.</strong><br />
-		If this saved you from fraction math, buy me a coffee.
-	  </p>
+          <div class="result-row">
+            <strong>Leftover</strong>
+            <span id="leftoverOutput">-</span>
+          </div>
 
-	  <a
-		class="venmo-button"
-		href="https://venmo.com/RevJhonSoda"
-		target="_blank"
-		rel="noopener noreferrer"
-	  >
-		Buy me a Coffee
-	  </a>
-	</footer>
+          <div class="result-row">
+            <strong>Side Margin</strong>
+            <span id="sideMarginOutput">-</span>
+          </div>
+        </div>
+
+        <div class="why" id="whyOutput"></div>
+
+        <details class="details">
+          <summary>Show letter breakdown</summary>
+          <div id="breakdownOutput" class="breakdown"></div>
+        </details>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        <strong>Built by JJ Ruge Sign Co.</strong><br />
+        If this saved you from fraction math, buy me a coffee.
+      </p>
+
+      <a
+        class="venmo-button"
+        href="https://venmo.com/jrugejr"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Buy Me A Coffee
+      </a>
+    </footer>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=104"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./service-worker.js");
+    }
+  </script>
 </body>
 </html>
