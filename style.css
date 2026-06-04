@@ -1,11 +1,11 @@
 :root {
-  --bg: #111111;
-  --panel: #1d1d1d;
-  --text: #f3f0e8;
-  --muted: #b8b0a2;
-  --accent: #f0b44c;
-  --border: #3a352d;
-  --danger: #ff6b5f;
+  --bg: #05080d;
+  --panel: #0d1420;
+  --text: #e8f7ff;
+  --muted: #8fb7c9;
+  --accent: #00d9ff;
+  --border: #1f3b4a;
+  --danger: #ff5f7a;
 }
 
 * {
@@ -205,4 +205,21 @@ footer strong {
 
 a {
   color: var(--accent);
+}
+
+.venmo-button {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 12px 16px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #05080d;
+  font-weight: 900;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.venmo-button:active {
+  transform: translateY(1px);
 }

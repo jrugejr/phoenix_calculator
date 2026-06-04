@@ -29,17 +29,17 @@ if ("serviceWorker" in navigator) {
       </p>
 
       <div class="install-note">
-        Want this on your phone? <br />
-        Android: tap Install App or Menu --> Add to Home Screen.<br />
-		iPhone: tap Share, then Add to Home Screen.
+        Want this on your phone? Open this page in your phone browser.
+        On iPhone, tap Share, then Add to Home Screen.
+        On Android, tap the menu, then Add to Home Screen or Install App.
       </div>
     </header>
 
     <main>
       <section class="card">
-        <div class="field-grid">
+		<div class="field-grid">
           <div>
-            <label for="copyInput">Copy</label>
+            <label for="copyInput">Enter 1 or 2 words to calculate</label>
             <input
               id="copyInput"
               type="text"
@@ -121,14 +121,21 @@ if ("serviceWorker" in navigator) {
       </section>
     </main>
 
-    <footer>
-      <p>
-        <strong>Built by JJ Ruge Sign Co.</strong><br />
-        If this saved you from fraction math, buy the goblin a coffee.<br />
-        Venmo: <strong>@RevJhonSoda</strong>
-		
-      </p>
-    </footer>
+	<footer>
+	  <p>
+		<strong>Built by JJ Ruge Sign Co.</strong><br />
+		If this saved you from fraction math, buy me a coffee.
+	  </p>
+
+	  <a
+		class="venmo-button"
+		href="https://venmo.com/RevJhonSoda"
+		target="_blank"
+		rel="noopener noreferrer"
+	  >
+		Buy me a Coffee
+	  </a>
+	</footer>
   </div>
 
   <script src="app.js"></script>
