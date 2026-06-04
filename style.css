@@ -1,11 +1,12 @@
 :root {
-  --bg: #05080d;
-  --panel: #0d1420;
-  --text: #e8f7ff;
-  --muted: #8fb7c9;
-  --accent: #00d9ff;
-  --border: #1f3b4a;
-  --danger: #ff5f7a;
+  --bg: #07111b;
+  --panel: #101d2b;
+  --text: #f4f7fb;
+  --muted: #aab8c5;
+  --accent: #38a8e8;
+  --accent-soft: #1f6f9f;
+  --border: #25384a;
+  --danger: #ff6b6b;
 }
 
 * {
@@ -111,8 +112,8 @@ button {
   border: 0;
   border-radius: 12px;
   padding: 16px;
-  background: var(--accent);
-  color: #17120a;
+  background: linear-gradient(90deg, var(--accent-soft), var(--accent));
+  color: #f4f7fb;
   font-weight: 900;
   font-size: 1rem;
   text-transform: uppercase;
@@ -212,8 +213,8 @@ a {
   margin-top: 10px;
   padding: 12px 16px;
   border-radius: 999px;
-  background: var(--accent);
-  color: #05080d;
+  background: var(--accent-soft);
+  color: #f4f7fb;
   font-weight: 900;
   text-decoration: none;
   text-transform: uppercase;
