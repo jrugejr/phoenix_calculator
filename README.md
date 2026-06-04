@@ -2,80 +2,90 @@
 
 A lettering layout tool for sign painters.
 
-The Phoenix Layout Calculator helps calculate stem widths, counter widths, letter spacing, and word spacing using traditional Phoenix (Condensed Gothic) lettering principles.
-
-Built by a sign painter for sign painters.
+Built to help calculate traditional Phoenix (Condensed Gothic) lettering layouts without reaching for a calculator, scratch paper, or a headache.
 
 ## Features
 
-* Phoenix / Condensed Gothic layout calculations
-* Stem width recommendations
-* Counter width recommendations
-* Letter spacing calculations
-* Two-word spacing support
-* Yardstick-friendly fractional measurements
+* Stem width calculation
+* Counter width calculation
+* Letter spacing calculation
+* Word spacing calculation
+* Side margin calculation
+* Traditional Phoenix layout rules
+* Practical small-copy layout option
 * Mobile-friendly interface
-* Offline support
-* Installable app (PWA)
-* Friendly sign-painter heckling system
+* Installable PWA
+* Offline support after first visit
+* Goblin-powered encouragement
+
+## Counter Styles
+
+### Smaller Counters (Traditional)
+
+Uses traditional Phoenix proportions.
+
+* Counters are typically 55%–85% of stem width
+* Better for storefronts, gold leaf, and formal layouts
+* Closely follows classic Phoenix construction rules
+
+### Equal Counters (Practical)
+
+Uses equal stem and counter widths.
+
+* Counters match stem width
+* Useful for small copy and showcard work
+* Often produces more practical layouts at smaller sizes
 
 ## Current Version
 
-### Version 1.0.1
-
-* Live web application
-* Installable on Android and iPhone
-* Works offline after first visit
-* Supports one or two words on a single line
-* Uses traditional Phoenix lettering proportions
-* Optimized for 1/8" yardstick measurements
+Version 1.0.3
 
 ## Changelog
 
-### v1.0
+### v1.0.3
 
-- Improved mobile layout
-- Refined color palette
-- Added Venmo coffee button
-- Improved calculator layout
-- Refined goblin message styling
+* Added Traditional and Practical counter styles
+* Added side margin calculations
+* Improved small-copy layout handling
+* Improved spacing logic
+* Better support for short words and tight layouts
+
+### v1.0.2
+
+* Added side margin output
+* Improved 1/16" spacing support
+* Improved layout fitting logic
+
+### v1.0.1
+
+* Improved mobile layout
+* Refined color palette
+* Added Buy the Goblin a Coffee button
+* Improved calculator layout
+* Refined goblin message styling
+
+## Planned Features
+
+* Visual layout preview
+* Grid-paper layout preview
+* Margin calculator
+* Additional lettering styles
+* Saved preferences
+* More themes
+* Layout explorer
+* Showcard tools
 
 ## Why?
 
 Because sometimes you just want to paint the sign instead of doing fraction math.
 
-This project began as a workshop idea and evolved into a free tool for sign painters who want to spend more time lettering and less time calculating.
-
-## Planned Features
-
-### Version 1.1
-
-* Improved 1/16" spacing optimization
-* Better leftover width distribution
-* Additional layout refinements
-
-### Version 1.2
-
-* Multiple themes
-
-  * Night Signal
-  * Source
-  * Phosphor
-
-### Future Tools
-
-* Margin Calculator
-* Layout Explorer
-* Additional lettering styles
-* Roman Letter Calculator
-* Sign Painter Toolbox utilities
-
 ## Support the Project
 
-If this tool saved you from doing fraction math, consider buying the goblin a coffee.
+If this tool saves you some time, prevents a layout headache, or helps you paint more signs, consider buying me a coffee.
 
 Venmo: @RevJhonSoda
 
 ## License
 
 MIT License
+
