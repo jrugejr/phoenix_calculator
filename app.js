@@ -1,10 +1,10 @@
 // ============================================================
 // PHOENIX LAYOUT CALCULATOR
-// Browser Version 1.0.2
+// Browser Version 1.0.3
 // ============================================================
 
 const APP_NAME = "Phoenix Layout Calculator";
-const APP_VERSION = "1.0.2";
+const APP_VERSION = "1.0.3";
 
 const HECKLES = [
   "Wow dude, really? Using the app again? Do the math yourself.",
@@ -43,39 +43,20 @@ const HECKLES = [
 ];
 
 const LETTER_RULES = {
-  A: [2, 1],
-  B: [2, 1],
-  C: [2, 1],
-  D: [2, 1],
-  E: [1, 1],
-  F: [1, 1],
-  G: [2, 1],
-  H: [2, 1],
-  I: [1, 0],
-  J: [2, 1],
-  K: [2, 1],
-  L: [1, 1],
-  M: [3, 2],
-  N: [2, 1],
-  O: [2, 1],
-  P: [2, 1],
-  Q: [2, 1],
-  R: [2, 1],
-  S: [2, 1],
-  T: [1, 1],
-  U: [2, 1],
-  V: [2, 1],
-  W: [3, 2],
-  X: [2, 1],
-  Y: [2, 1],
-  Z: [2, 1]
+  A: [2, 1], B: [2, 1], C: [2, 1], D: [2, 1],
+  E: [1, 1], F: [1, 1], G: [2, 1], H: [2, 1],
+  I: [1, 0], J: [2, 1], K: [2, 1], L: [1, 1],
+  M: [3, 2], N: [2, 1], O: [2, 1], P: [2, 1],
+  Q: [2, 1], R: [2, 1], S: [2, 1], T: [1, 1],
+  U: [2, 1], V: [2, 1], W: [3, 2], X: [2, 1],
+  Y: [2, 1], Z: [2, 1]
 };
 
 const DENOMINATOR = 8;
 const SPACING_DENOMINATOR = 16;
-const MIN_COUNTER_RATIO = 0.60;
+const MIN_COUNTER_RATIO = 0.55;
 const MAX_COUNTER_RATIO = 0.85;
-const IDEAL_COUNTER_RATIOS = [0.70, 0.65, 0.60, 0.75, 0.80, 0.85];
+const IDEAL_COUNTER_RATIOS = [0.70, 0.65, 0.60, 0.75, 0.55, 0.80, 0.85];
 
 function roundDownToFraction(value, denominator = DENOMINATOR) {
   return Math.floor(value * denominator) / denominator;
@@ -88,58 +69,42 @@ function roundToFraction(value, denominator = DENOMINATOR) {
 function gcd(a, b) {
   a = Math.abs(a);
   b = Math.abs(b);
-
   while (b) {
     const temp = b;
     b = a % b;
     a = temp;
   }
-
   return a || 1;
 }
 
 function formatInches(value) {
   const sign = value < 0 ? "-" : "";
   value = Math.abs(value);
-
   const denominator = 16;
   let numerator = Math.round(value * denominator);
-
   const whole = Math.floor(numerator / denominator);
   numerator = numerator % denominator;
 
-  if (numerator === 0) {
-    return `${sign}${whole}"`;
-  }
+  if (numerator === 0) return `${sign}${whole}"`;
 
   const divisor = gcd(numerator, denominator);
   const simpleNumerator = numerator / divisor;
   const simpleDenominator = denominator / divisor;
 
-  if (whole === 0) {
-    return `${sign}${simpleNumerator}/${simpleDenominator}"`;
-  }
+  if (whole === 0) return `${sign}${simpleNumerator}/${simpleDenominator}"`;
 
   return `${sign}${whole} ${simpleNumerator}/${simpleDenominator}"`;
 }
 
 function validateCopy(text) {
   const words = text.trim().toUpperCase().split(/\s+/).filter(Boolean);
-
-  if (words.length === 0) {
-    throw new Error("Enter at least one word, layout wizard.");
-  }
-
-  if (words.length > 2) {
-    throw new Error("Whoa there, novelist. Version 1 only handles one or two words on a single line.");
-  }
-
+  if (words.length === 0) throw new Error("Enter at least one word, layout wizard.");
+  if (words.length > 2) throw new Error("Whoa there, novelist. Version 1 only handles one or two words on a single line.");
   return words;
 }
 
 function countCopy(text) {
   const words = validateCopy(text);
-
   let stems = 0;
   let counters = 0;
   let letterSpaces = 0;
@@ -150,31 +115,17 @@ function countCopy(text) {
     letterSpaces += Math.max(word.length - 1, 0);
 
     for (const char of word) {
-      if (!LETTER_RULES[char]) {
-        throw new Error(`Unsupported character: ${char}`);
-      }
+      if (!LETTER_RULES[char]) throw new Error(`Unsupported character: ${char}`);
 
       const [letterStems, letterCounters] = LETTER_RULES[char];
       stems += letterStems;
       counters += letterCounters;
 
-      letters.push({
-        char,
-        wordIndex,
-        stems: letterStems,
-        counters: letterCounters
-      });
+      letters.push({ char, wordIndex, stems: letterStems, counters: letterCounters });
     }
   });
 
-  return {
-    words,
-    stems,
-    counters,
-    letterSpaces,
-    wordSpaces,
-    letters
-  };
+  return { words, stems, counters, letterSpaces, wordSpaces, letters };
 }
 
 function calculateLetterMass(stems, counters, stemWidth, counterWidth) {
@@ -182,44 +133,35 @@ function calculateLetterMass(stems, counters, stemWidth, counterWidth) {
 }
 
 function calculateWordSpace(stemWidth, counterWidth) {
-  // Phoenix word spacing rule:
-  // one normal letter width = 2 stems + 1 counter.
   return (2 * stemWidth) + counterWidth;
 }
 
 function calculateBestLetterSpacing(remaining, letterSpaces, counter) {
-  if (letterSpaces <= 0) {
-    return 0;
-  }
-
-  // The goal is NOT to spend all leftover as letter spacing.
-  // The goal is the largest valid Phoenix spacing that fits:
-  // 1. Try 1/8" marks first.
-  // 2. Improve with 1/16" only if it fits.
-  // 3. Never exceed the counter.
-  // 4. Anything still unused becomes side margin.
+  if (letterSpaces <= 0) return 0;
 
   const exactSpace = remaining / letterSpaces;
   const maxAllowed = Math.min(exactSpace, counter);
 
   let spacing = roundDownToFraction(maxAllowed, DENOMINATOR);
-
-  if (spacing <= 0) {
-    spacing = roundDownToFraction(maxAllowed, SPACING_DENOMINATOR);
-  }
-
   const sixteenthSpacing = roundDownToFraction(maxAllowed, SPACING_DENOMINATOR);
 
-  if (sixteenthSpacing > spacing) {
-    spacing = sixteenthSpacing;
-  }
+  if (sixteenthSpacing > spacing) spacing = sixteenthSpacing;
 
   return spacing;
 }
 
-function calculateLayout(copyText, targetWidth) {
-  const counts = countCopy(copyText);
+function getCounterOptions(stem, counterStyle) {
+  if (counterStyle === "equal") return [stem];
 
+  const options = IDEAL_COUNTER_RATIOS.map((ratio) =>
+    roundToFraction(stem * ratio, DENOMINATOR)
+  );
+
+  return [...new Set(options)];
+}
+
+function calculateLayout(copyText, targetWidth, counterStyle = "smaller") {
+  const counts = countCopy(copyText);
   const stems = counts.stems;
   const counters = counts.counters;
   const letterSpaces = counts.letterSpaces;
@@ -232,21 +174,15 @@ function calculateLayout(copyText, targetWidth) {
   let stem = maxStem;
 
   while (stem >= step) {
-    let counterOptions = IDEAL_COUNTER_RATIOS.map((ratio) =>
-      roundToFraction(stem * ratio, DENOMINATOR)
-    );
-
-    counterOptions = [...new Set(counterOptions)];
+    const counterOptions = getCounterOptions(stem, counterStyle);
 
     for (const counter of counterOptions) {
-      if (counter <= 0) {
-        continue;
-      }
+      if (counter <= 0) continue;
 
       const counterRatio = counter / stem;
 
-      if (counterRatio < MIN_COUNTER_RATIO || counterRatio > MAX_COUNTER_RATIO) {
-        continue;
+      if (counterStyle === "smaller") {
+        if (counterRatio < MIN_COUNTER_RATIO || counterRatio > MAX_COUNTER_RATIO) continue;
       }
 
       const letterMass = calculateLetterMass(stems, counters, stem, counter);
@@ -254,34 +190,19 @@ function calculateLayout(copyText, targetWidth) {
       const totalWordSpace = wordSpaces * singleWordSpace;
       const remaining = targetWidth - letterMass - totalWordSpace;
 
-      if (remaining < 0) {
-        continue;
-      }
+      if (remaining < 0) continue;
 
-      const letterSpacing = calculateBestLetterSpacing(
-        remaining,
-        letterSpaces,
-        counter
-      );
+      const letterSpacing = calculateBestLetterSpacing(remaining, letterSpaces, counter);
 
       if (letterSpaces > 0) {
-        if (letterSpacing <= 0) {
-          continue;
-        }
-
-        if (letterSpacing > counter) {
-          continue;
-        }
+        if (letterSpacing <= 0) continue;
+        if (letterSpacing > counter) continue;
       }
 
-      const finalWidth =
-        letterMass + totalWordSpace + (letterSpacing * letterSpaces);
-
+      const finalWidth = letterMass + totalWordSpace + (letterSpacing * letterSpaces);
       const leftover = targetWidth - finalWidth;
 
-      if (leftover < 0) {
-        continue;
-      }
+      if (leftover < 0) continue;
 
       return {
         copy: counts.words.join(" "),
@@ -293,6 +214,7 @@ function calculateLayout(copyText, targetWidth) {
         wordSpaces,
         letters: counts.letters,
         maxEqualUnit,
+        counterStyle,
         recommended: {
           stem,
           counter,
@@ -322,6 +244,7 @@ function calculateLayout(copyText, targetWidth) {
     wordSpaces,
     letters: counts.letters,
     maxEqualUnit,
+    counterStyle,
     recommended: null
   };
 }
@@ -340,19 +263,14 @@ function clearError() {
 }
 
 function renderBreakdown(letters) {
-  return letters
-    .map((item) => {
-      return `<div>${item.char}: ${item.stems} stem(s), ${item.counters} counter(s)</div>`;
-    })
-    .join("");
+  return letters.map((item) => {
+    return `<div>${item.char}: ${item.stems} stem(s), ${item.counters} counter(s)</div>`;
+  }).join("");
 }
 
 function setTextIfExists(id, text) {
   const element = document.getElementById(id);
-
-  if (element) {
-    element.textContent = text;
-  }
+  if (element) element.textContent = text;
 }
 
 function renderLayout(result) {
@@ -374,7 +292,6 @@ function renderLayout(result) {
   setTextIfExists("sideMarginOutput", `${formatInches(layout.sideMargin)} each`);
 
   const wordSpaceRow = document.getElementById("wordSpaceRow");
-
   if (wordSpaceRow) {
     if (result.wordSpaces > 0) {
       wordSpaceRow.style.display = "flex";
@@ -384,9 +301,14 @@ function renderLayout(result) {
     }
   }
 
+  const counterDescription =
+    result.counterStyle === "equal"
+      ? "Counters are set equal to the stems for a practical small-copy layout."
+      : `Counter is about <strong>${Math.round(layout.counterRatio * 100)}%</strong> of the stem.`;
+
   let why = `
     <p>Uses the largest clean stem width that passes the Phoenix checks.</p>
-    <p>Counter is about <strong>${Math.round(layout.counterRatio * 100)}%</strong> of the stem.</p>
+    <p>${counterDescription}</p>
     <p>Letter spacing is about <strong>${Math.round(layout.letterSpacingToCounterRatio * 100)}%</strong> of the counter.</p>
   `;
 
@@ -398,14 +320,10 @@ function renderLayout(result) {
   why += `<p>Stems and counters prioritize 1/8&quot; marks. Letter spacing may use 1/16&quot; when it creates a cleaner fit.</p>`;
 
   const whyOutput = document.getElementById("whyOutput");
-  if (whyOutput) {
-    whyOutput.innerHTML = why;
-  }
+  if (whyOutput) whyOutput.innerHTML = why;
 
   const breakdownOutput = document.getElementById("breakdownOutput");
-  if (breakdownOutput) {
-    breakdownOutput.innerHTML = renderBreakdown(result.letters);
-  }
+  if (breakdownOutput) breakdownOutput.innerHTML = renderBreakdown(result.letters);
 
   document.getElementById("results").classList.add("active");
 }
@@ -414,6 +332,8 @@ function handleCalculate() {
   const copyText = document.getElementById("copyInput").value;
   const widthText = document.getElementById("widthInput").value;
   const targetWidth = Number(widthText);
+  const counterStyleElement = document.getElementById("counterStyle");
+  const counterStyle = counterStyleElement ? counterStyleElement.value : "smaller";
 
   document.getElementById("heckle").textContent = randomHeckle();
 
@@ -422,7 +342,7 @@ function handleCalculate() {
       throw new Error("Target width must be a number bigger than zero, boss.");
     }
 
-    const result = calculateLayout(copyText, targetWidth);
+    const result = calculateLayout(copyText, targetWidth, counterStyle);
     renderLayout(result);
   } catch (error) {
     showError(error.message);
@@ -433,14 +353,10 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("calculateButton").addEventListener("click", handleCalculate);
 
   document.getElementById("copyInput").addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      handleCalculate();
-    }
+    if (event.key === "Enter") handleCalculate();
   });
 
   document.getElementById("widthInput").addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      handleCalculate();
-    }
+    if (event.key === "Enter") handleCalculate();
   });
 });
