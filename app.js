@@ -55,7 +55,7 @@ const LETTER_RULES = {
 const DENOMINATOR = 8;
 const SPACING_DENOMINATOR = 16;
 const MIN_COUNTER_RATIO = 0.60;
-const MAX_COUNTER_RATIO = 0.75;
+const MAX_COUNTER_RATIO = 0.85;
 const IDEAL_COUNTER_RATIOS = [0.70, 0.65, 0.60, 0.75];
 
 function roundDownToFraction(value, denominator = DENOMINATOR) {
