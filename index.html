@@ -35,91 +35,90 @@ if ("serviceWorker" in navigator) {
       </div>
     </header>
 
-    <main>
-      <section class="card">
-		<div class="field-grid">
-          <div>
-            <label for="copyInput">Enter 1 or 2 words to calculate</label>
-            <input
-              id="copyInput"
-              type="text"
-              placeholder="SIGNS or SHOE REPAIR"
-              autocomplete="off"
-            />
-          </div>
+<main>
+  <section class="card input-card">
+    <div class="field-grid">
+      <div>
+        <label for="copyInput">Enter 1 or 2 Words to Calculate</label>
+        <input
+          id="copyInput"
+          type="text"
+          placeholder="SIGNS or SHOE REPAIR"
+          autocomplete="off"
+        />
+      </div>
 
-          <div>
-            <label for="widthInput">Target Width in Inches</label>
-            <input
-              id="widthInput"
-              type="number"
-              step="0.125"
-              min="0"
-              placeholder="18"
-            />
-          </div>
+      <div>
+        <label for="widthInput">Target Width in Inches</label>
+        <input
+          id="widthInput"
+          type="number"
+          step="0.125"
+          min="0"
+          placeholder="18"
+        />
+      </div>
 
-          <button id="calculateButton" type="button">
-            Calculate
-          </button>
-        </div>
-      </section>
+      <button id="calculateButton" type="button">
+        Calculate
+      </button>
+    </div>
 
-      <section class="card">
-        <div id="heckle" class="heckle">
-          Enter some copy. Let the goblin do the shameful math.
-        </div>
-        <div id="error" class="error"></div>
-      </section>
+    <div id="heckle" class="heckle inline-heckle">
+      Enter some copy. Let the goblin do the shameful math.
+    </div>
 
-      <section id="results" class="card results">
-        <h2>Recommended Layout</h2>
+    <div id="error" class="error"></div>
+  </section>
 
-        <div class="result-grid">
-          <div class="result-row">
-            <strong>Stem</strong>
-            <span id="stemOutput">-</span>
-          </div>
+  <section id="results" class="card results">
+    <h2>Recommended Layout</h2>
 
-          <div class="result-row">
-            <strong>Counter</strong>
-            <span id="counterOutput">-</span>
-          </div>
+    <div class="result-grid">
+      <div class="result-row">
+        <strong>Stem</strong>
+        <span id="stemOutput">-</span>
+      </div>
 
-          <div class="result-row">
-            <strong>Letter Space</strong>
-            <span id="letterSpaceOutput">-</span>
-          </div>
+      <div class="result-row">
+        <strong>Counter</strong>
+        <span id="counterOutput">-</span>
+      </div>
 
-          <div class="result-row" id="wordSpaceRow">
-            <strong>Word Space</strong>
-            <span id="wordSpaceOutput">-</span>
-          </div>
+      <div class="result-row">
+        <strong>Letter Space</strong>
+        <span id="letterSpaceOutput">-</span>
+      </div>
 
-          <div class="result-row">
-            <strong>Letter Mass</strong>
-            <span id="letterMassOutput">-</span>
-          </div>
+      <div class="result-row" id="wordSpaceRow">
+        <strong>Word Space</strong>
+        <span id="wordSpaceOutput">-</span>
+      </div>
 
-          <div class="result-row">
-            <strong>Final Width</strong>
-            <span id="finalWidthOutput">-</span>
-          </div>
+      <div class="result-row">
+        <strong>Letter Mass</strong>
+        <span id="letterMassOutput">-</span>
+      </div>
 
-          <div class="result-row">
-            <strong>Leftover</strong>
-            <span id="leftoverOutput">-</span>
-          </div>
-        </div>
+      <div class="result-row">
+        <strong>Final Width</strong>
+        <span id="finalWidthOutput">-</span>
+      </div>
 
-        <div class="why" id="whyOutput"></div>
+      <div class="result-row">
+        <strong>Leftover</strong>
+        <span id="leftoverOutput">-</span>
+      </div>
+    </div>
 
-        <details class="details">
-          <summary>Show letter breakdown</summary>
-          <div id="breakdownOutput" class="breakdown"></div>
-        </details>
-      </section>
-    </main>
+    <div class="why" id="whyOutput"></div>
+
+    <details class="details">
+      <summary>Show letter breakdown</summary>
+      <div id="breakdownOutput" class="breakdown"></div>
+    </details>
+  </section>
+</main>
 
 	<footer>
 	  <p>
