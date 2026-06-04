@@ -30,6 +30,16 @@ Built by a sign painter for sign painters.
 * Uses traditional Phoenix lettering proportions
 * Optimized for 1/8" yardstick measurements
 
+## Changelog
+
+### v1.0.1
+
+- Improved mobile layout
+- Refined color palette
+- Added Venmo coffee button
+- Improved calculator layout
+- Refined goblin message styling
+
 ## Why?
 
 Because sometimes you just want to paint the sign instead of doing fraction math.
