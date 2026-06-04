@@ -255,7 +255,7 @@ function calculateLayout(copyText, targetWidth) {
 		  }
 		}
 	  }
-	  
+	  }
       const finalWidth =
         letterMass + totalWordSpace + (letterSpacing * letterSpaces);
 
