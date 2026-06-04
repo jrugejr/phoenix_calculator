@@ -1,10 +1,10 @@
 // ============================================================
 // PHOENIX LAYOUT CALCULATOR
-// Browser Version 1
+// Browser Version 1.0.1
 // ============================================================
 
 const APP_NAME = "Phoenix Layout Calculator";
-const APP_VERSION = "1.0";
+const APP_VERSION = "1.0.1";
 
 const HECKLES = [
   "Wow dude, really? Using the app again? Do the math yourself.",
@@ -43,35 +43,17 @@ const HECKLES = [
 ];
 
 const LETTER_RULES = {
-  A: [2, 1],
-  B: [2, 1],
-  C: [2, 1],
-  D: [2, 1],
-  E: [1, 1],
-  F: [1, 1],
-  G: [2, 1],
-  H: [2, 1],
-  I: [1, 0],
-  J: [2, 1],
-  K: [2, 1],
-  L: [1, 1],
-  M: [3, 2],
-  N: [2, 1],
-  O: [2, 1],
-  P: [2, 1],
-  Q: [2, 1],
-  R: [2, 1],
-  S: [2, 1],
-  T: [1, 1],
-  U: [2, 1],
-  V: [2, 1],
-  W: [3, 2],
-  X: [2, 1],
-  Y: [2, 1],
-  Z: [2, 1]
+  A: [2, 1], B: [2, 1], C: [2, 1], D: [2, 1],
+  E: [1, 1], F: [1, 1], G: [2, 1], H: [2, 1],
+  I: [1, 0], J: [2, 1], K: [2, 1], L: [1, 1],
+  M: [3, 2], N: [2, 1], O: [2, 1], P: [2, 1],
+  Q: [2, 1], R: [2, 1], S: [2, 1], T: [1, 1],
+  U: [2, 1], V: [2, 1], W: [3, 2], X: [2, 1],
+  Y: [2, 1], Z: [2, 1]
 };
 
 const DENOMINATOR = 8;
+const SPACING_DENOMINATOR = 16;
 const MIN_COUNTER_RATIO = 0.60;
 const MAX_COUNTER_RATIO = 0.75;
 const IDEAL_COUNTER_RATIOS = [0.70, 0.65, 0.60, 0.75];
@@ -87,58 +69,43 @@ function roundToFraction(value, denominator = DENOMINATOR) {
 function gcd(a, b) {
   a = Math.abs(a);
   b = Math.abs(b);
-
   while (b) {
     const temp = b;
     b = a % b;
     a = temp;
   }
-
   return a || 1;
 }
 
 function formatInches(value) {
   const sign = value < 0 ? "-" : "";
   value = Math.abs(value);
-
   const denominator = 16;
   let numerator = Math.round(value * denominator);
-
   const whole = Math.floor(numerator / denominator);
   numerator = numerator % denominator;
 
-  if (numerator === 0) {
-    return `${sign}${whole}"`;
-  }
+  if (numerator === 0) return `${sign}${whole}\"`;
 
   const divisor = gcd(numerator, denominator);
   const simpleNumerator = numerator / divisor;
   const simpleDenominator = denominator / divisor;
 
-  if (whole === 0) {
-    return `${sign}${simpleNumerator}/${simpleDenominator}"`;
-  }
-
-  return `${sign}${whole} ${simpleNumerator}/${simpleDenominator}"`;
+  if (whole === 0) return `${sign}${simpleNumerator}/${simpleDenominator}\"`;
+  return `${sign}${whole} ${simpleNumerator}/${simpleDenominator}\"`;
 }
 
 function validateCopy(text) {
   const words = text.trim().toUpperCase().split(/\s+/).filter(Boolean);
-
-  if (words.length === 0) {
-    throw new Error("Enter at least one word, layout wizard.");
-  }
-
+  if (words.length === 0) throw new Error("Enter at least one word, layout wizard.");
   if (words.length > 2) {
     throw new Error("Whoa there, novelist. Version 1 only handles one or two words on a single line.");
   }
-
   return words;
 }
 
 function countCopy(text) {
   const words = validateCopy(text);
-
   let stems = 0;
   let counters = 0;
   let letterSpaces = 0;
@@ -147,33 +114,16 @@ function countCopy(text) {
 
   words.forEach((word, wordIndex) => {
     letterSpaces += Math.max(word.length - 1, 0);
-
     for (const char of word) {
-      if (!LETTER_RULES[char]) {
-        throw new Error(`Unsupported character: ${char}`);
-      }
-
+      if (!LETTER_RULES[char]) throw new Error(`Unsupported character: ${char}`);
       const [letterStems, letterCounters] = LETTER_RULES[char];
       stems += letterStems;
       counters += letterCounters;
-
-      letters.push({
-        char,
-        wordIndex,
-        stems: letterStems,
-        counters: letterCounters
-      });
+      letters.push({ char, wordIndex, stems: letterStems, counters: letterCounters });
     }
   });
 
-  return {
-    words,
-    stems,
-    counters,
-    letterSpaces,
-    wordSpaces,
-    letters
-  };
+  return { words, stems, counters, letterSpaces, wordSpaces, letters };
 }
 
 function calculateLetterMass(stems, counters, stemWidth, counterWidth) {
@@ -184,9 +134,24 @@ function calculateWordSpace(stemWidth, counterWidth) {
   return (2 * stemWidth) + counterWidth;
 }
 
+function calculateBestLetterSpacing(remaining, letterSpaces, counter) {
+  if (letterSpaces <= 0) return 0;
+
+  let spacing = roundDownToFraction(remaining / letterSpaces, DENOMINATOR);
+  const step = 1 / SPACING_DENOMINATOR;
+
+  while (spacing + step <= counter) {
+    const possibleSpacing = spacing + step;
+    const possibleTotal = possibleSpacing * letterSpaces;
+    if (possibleTotal > remaining) break;
+    spacing = possibleSpacing;
+  }
+
+  return spacing;
+}
+
 function calculateLayout(copyText, targetWidth) {
   const counts = countCopy(copyText);
-
   const stems = counts.stems;
   const counters = counts.counters;
   const letterSpaces = counts.letterSpaces;
@@ -202,78 +167,30 @@ function calculateLayout(copyText, targetWidth) {
     let counterOptions = IDEAL_COUNTER_RATIOS.map((ratio) =>
       roundToFraction(stem * ratio, DENOMINATOR)
     );
-
     counterOptions = [...new Set(counterOptions)];
 
     for (const counter of counterOptions) {
-      if (counter <= 0) {
-        continue;
-      }
+      if (counter <= 0) continue;
 
       const counterRatio = counter / stem;
-
-      if (counterRatio < MIN_COUNTER_RATIO) {
-        continue;
-      }
-
-      if (counterRatio > MAX_COUNTER_RATIO) {
-        continue;
-      }
+      if (counterRatio < MIN_COUNTER_RATIO || counterRatio > MAX_COUNTER_RATIO) continue;
 
       const letterMass = calculateLetterMass(stems, counters, stem, counter);
       const singleWordSpace = calculateWordSpace(stem, counter);
       const totalWordSpace = wordSpaces * singleWordSpace;
-      const usedBeforeLetterSpacing = letterMass + totalWordSpace;
-      const remaining = targetWidth - usedBeforeLetterSpacing;
+      const remaining = targetWidth - letterMass - totalWordSpace;
+      if (remaining < 0) continue;
 
-      if (remaining < 0) {
-        continue;
-      }
-
-      let letterSpacing = 0;
+      const letterSpacing = calculateBestLetterSpacing(remaining, letterSpaces, counter);
 
       if (letterSpaces > 0) {
-        // Default to 1/8" spacing.
-		letterSpacing = roundDownToFraction(remaining / letterSpaces, DENOMINATOR);
+        if (letterSpacing <= 0) continue;
+        if (letterSpacing > counter) continue;
+      }
 
-		// If the leftover can be cleanly split into 1/16" spacing,
-		// use that extra precision for letter spacing only.
-		const testFinalWidth =
-		  letterMass + totalWordSpace + (letterSpacing * letterSpaces);
-
-		const testLeftover = targetWidth - testFinalWidth;
-
-		if (letterSpaces > 0 && testLeftover > 0) {
-		  const extraPerSpace = testLeftover / letterSpaces;
-		  const extraPerSpaceInSixteenths = extraPerSpace * 16;
-
-		  if (Number.isInteger(extraPerSpaceInSixteenths)) {
-			const improvedSpacing = letterSpacing + extraPerSpace;
-
-			if (improvedSpacing <= counter) {
-				letterSpacing = improvedSpacing;
-		  }
-		}
-	  }
-	  }
-      const finalWidth =
-        letterMass + totalWordSpace + (letterSpacing * letterSpaces);
-
+      const finalWidth = letterMass + totalWordSpace + (letterSpacing * letterSpaces);
       const leftover = targetWidth - finalWidth;
-
-      if (leftover < 0) {
-        continue;
-      }
-
-      if (letterSpaces > 0) {
-        if (letterSpacing <= 0) {
-          continue;
-        }
-
-        if (letterSpacing > counter) {
-          continue;
-        }
-      }
+      if (leftover < 0) continue;
 
       return {
         copy: counts.words.join(" "),
@@ -294,7 +211,7 @@ function calculateLayout(copyText, targetWidth) {
           totalWordSpace,
           finalWidth,
           leftover,
-		  sideMargin: leftover / 2,
+          sideMargin: leftover / 2,
           counterRatio,
           letterSpacingToCounterRatio: counter ? letterSpacing / counter : 0
         }
@@ -333,10 +250,13 @@ function clearError() {
 
 function renderBreakdown(letters) {
   return letters
-    .map((item) => {
-      return `<div>${item.char}: ${item.stems} stem(s), ${item.counters} counter(s)</div>`;
-    })
+    .map((item) => `<div>${item.char}: ${item.stems} stem(s), ${item.counters} counter(s)</div>`)
     .join("");
+}
+
+function setTextIfExists(id, text) {
+  const element = document.getElementById(id);
+  if (element) element.textContent = text;
 }
 
 function renderLayout(result) {
@@ -349,22 +269,22 @@ function renderLayout(result) {
 
   clearError();
 
-  document.getElementById("stemOutput").textContent = formatInches(layout.stem);
-  document.getElementById("counterOutput").textContent = formatInches(layout.counter);
-  document.getElementById("letterSpaceOutput").textContent = formatInches(layout.letterSpacing);
-  document.getElementById("letterMassOutput").textContent = formatInches(layout.letterMass);
-  document.getElementById("finalWidthOutput").textContent = formatInches(layout.finalWidth);
-  document.getElementById("leftoverOutput").textContent = formatInches(layout.leftover);
-  document.getElementById("sideMarginOutput").textContent =
-  `${formatInches(layout.sideMargin)} each`;
+  setTextIfExists("stemOutput", formatInches(layout.stem));
+  setTextIfExists("counterOutput", formatInches(layout.counter));
+  setTextIfExists("letterSpaceOutput", formatInches(layout.letterSpacing));
+  setTextIfExists("letterMassOutput", formatInches(layout.letterMass));
+  setTextIfExists("finalWidthOutput", formatInches(layout.finalWidth));
+  setTextIfExists("leftoverOutput", formatInches(layout.leftover));
+  setTextIfExists("sideMarginOutput", `${formatInches(layout.sideMargin)} each`);
 
   const wordSpaceRow = document.getElementById("wordSpaceRow");
-
-  if (result.wordSpaces > 0) {
-    wordSpaceRow.style.display = "flex";
-    document.getElementById("wordSpaceOutput").textContent = formatInches(layout.wordSpacing);
-  } else {
-    wordSpaceRow.style.display = "none";
+  if (wordSpaceRow) {
+    if (result.wordSpaces > 0) {
+      wordSpaceRow.style.display = "flex";
+      setTextIfExists("wordSpaceOutput", formatInches(layout.wordSpacing));
+    } else {
+      wordSpaceRow.style.display = "none";
+    }
   }
 
   let why = `
@@ -378,10 +298,14 @@ function renderLayout(result) {
   }
 
   why += `<p>Any leftover width is split into side margins.</p>`;
-  why += `<p>All major measurements are yardstick-friendly 1/8 inch marks.</p>`;
+  why += `<p>All major measurements are yardstick-friendly 1/8 inch marks. Letter spacing may use 1/16&quot; when it creates a cleaner fit.</p>`;
 
-  document.getElementById("whyOutput").innerHTML = why;
-  document.getElementById("breakdownOutput").innerHTML = renderBreakdown(result.letters);
+  const whyOutput = document.getElementById("whyOutput");
+  if (whyOutput) whyOutput.innerHTML = why;
+
+  const breakdownOutput = document.getElementById("breakdownOutput");
+  if (breakdownOutput) breakdownOutput.innerHTML = renderBreakdown(result.letters);
+
   document.getElementById("results").classList.add("active");
 }
 
@@ -408,14 +332,10 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("calculateButton").addEventListener("click", handleCalculate);
 
   document.getElementById("copyInput").addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      handleCalculate();
-    }
+    if (event.key === "Enter") handleCalculate();
   });
 
   document.getElementById("widthInput").addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      handleCalculate();
-    }
+    if (event.key === "Enter") handleCalculate();
   });
 });
