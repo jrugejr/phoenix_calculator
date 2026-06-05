@@ -122,9 +122,9 @@ Once installed, the app can continue working offline after the first visit.
 
 ## Support the Project
 
-If this tool saves you time, prevents a layout headache, or helps you paint more signs, consider buying the goblin a coffee.
+If this tool saves you time, prevents a layout headache, or helps you paint more signs, consider buying me a coffee.
 
-Venmo: **@jrugejr**
+Venmo: **@RevJhonSoda**
 
 ## License
 
