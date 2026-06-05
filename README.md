@@ -16,35 +16,46 @@ Built to help calculate traditional Phoenix (Condensed Gothic) lettering layouts
 * Mobile-friendly interface
 * Installable PWA
 * Offline support after first visit
+* Works on desktop and mobile
 * Goblin-powered encouragement
 
-## Counter Styles
+## Layout Styles
 
-### Smaller Counters (Traditional)
+### Traditional
 
-Uses traditional Phoenix proportions.
+Uses classic Phoenix proportions.
 
 * Counters are typically 55%–85% of stem width
 * Better for storefronts, gold leaf, and formal layouts
-* Closely follows classic Phoenix construction rules
+* Closely follows traditional Phoenix construction
 
-### Equal Counters (Practical)
+### Practical
 
 Uses equal stem and counter widths.
 
 * Counters match stem width
 * Useful for small copy and showcard work
 * Often produces more practical layouts at smaller sizes
+* Great for short words that would otherwise fail traditional proportion checks
 
 ## Current Version
 
-Version 1.0.3
+Version 1.0.4
 
 ## Changelog
 
+### v1.0.4
+
+* Added Traditional and Practical layout styles
+* Replaced dropdown selector with quick-toggle buttons
+* Added PHX app icon pack
+* Added Apple Touch Icon support
+* Added favicon support
+* Improved mobile PWA experience
+* Improved installation experience on Android and iPhone
+
 ### v1.0.3
 
-* Added Traditional and Practical counter styles
 * Added side margin calculations
 * Improved small-copy layout handling
 * Improved spacing logic
@@ -53,14 +64,14 @@ Version 1.0.3
 ### v1.0.2
 
 * Added side margin output
-* Improved 1/16" spacing support
+* Added 1/16" spacing support
 * Improved layout fitting logic
 
 ### v1.0.1
 
 * Improved mobile layout
 * Refined color palette
-* Added Buy the Goblin a Coffee button
+* Added Buy Me A Coffee button
 * Improved calculator layout
 * Refined goblin message styling
 
@@ -71,19 +82,49 @@ Version 1.0.3
 * Margin calculator
 * Additional lettering styles
 * Saved preferences
-* More themes
 * Layout explorer
 * Showcard tools
+* Multiple alphabet systems
 
 ## Why?
 
 Because sometimes you just want to paint the sign instead of doing fraction math.
 
+Phoenix Layout Calculator was built by a sign painter for sign painters. The goal is simple:
+
+* Spend less time dividing fractions.
+* Spend more time painting signs.
+* Keep traditional lettering knowledge accessible.
+* Make layout decisions faster in the shop, at a meet, or on a job site.
+
+## Install
+
+### Desktop
+
+Visit:
+
+https://phx.jjrugesignco.com
+
+### Android
+
+1. Open the site in Chrome.
+2. Tap **Install App** or **Add to Home Screen**.
+3. Launch Phoenix Layout Calculator like any other app.
+
+### iPhone / iPad
+
+1. Open the site in Safari.
+2. Tap **Share**.
+3. Select **Add to Home Screen**.
+4. Launch Phoenix Layout Calculator like any other app.
+
+Once installed, the app can continue working offline after the first visit.
+
 ## Support the Project
 
-If this tool saves you some time, prevents a layout headache, or helps you paint more signs, consider buying me a coffee.
+If this tool saves you time, prevents a layout headache, or helps you paint more signs, consider buying the goblin a coffee.
 
-Venmo: @RevJhonSoda
+Venmo: **@jrugejr**
 
 ## License
 
