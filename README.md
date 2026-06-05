@@ -103,7 +103,7 @@ Phoenix Layout Calculator was built by a sign painter for sign painters. The goa
 
 Visit:
 
-https://phx.jjrugesignco.com
+https://jrugejr.github.io/phoenix_calculator
 
 ### Android
 
