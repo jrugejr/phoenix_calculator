@@ -1,10 +1,10 @@
 // ============================================================
 // PHOENIX LAYOUT CALCULATOR
-// Browser Version 1.0.4
+// Browser Version 1.0.6
 // ============================================================
 
 const APP_NAME = "Phoenix Layout Calculator";
-const APP_VERSION = "1.0.4";
+const APP_VERSION = "1.0.6";
 
 const HECKLES = [
   "Wow dude, really? Using the app again? Do the math yourself.",
@@ -328,6 +328,8 @@ function renderLayout(result) {
   }
 
   clearError();
+
+  setTextIfExists("layoutTitle", `Recommended Layout for ${result.copy}`);
 
   setTextIfExists("stemOutput", formatInches(layout.stem));
   setTextIfExists("counterOutput", formatInches(layout.counter));

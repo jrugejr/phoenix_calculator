@@ -12,7 +12,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>Phoenix Layout Calculator</title>
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.json?v=106" />
 
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -100,7 +100,7 @@
       </section>
 
       <section id="results" class="card results">
-        <h2>Recommended Layout</h2>
+        <h2 id="layoutTitle">Recommended Layout</h2>
 
         <div class="result-grid">
           <div class="result-row">
@@ -170,7 +170,7 @@
     </footer>
   </div>
 
-  <script src="app.js?v=104"></script>
+  <script src="app.js?v=106"></script>
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("./service-worker.js");
