@@ -40,11 +40,11 @@ Uses equal stem and counter widths.
 
 ## Current Version
 
-Version 1.0.6
+Version 1.0.5
 
 ## Changelog
 
-### v1.0.6
+### v1.0.5
 
 - Added visible result heading showing the calculated copy
 - Improved Clarity session review by displaying the layout word in the results area
