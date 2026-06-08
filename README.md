@@ -40,16 +40,17 @@ Uses equal stem and counter widths.
 
 ## Current Version
 
-Version 1.0.5
+Version 1.0.6
 
 ## Changelog
 
-### v1.0.5
+### v1.0.6
 
-- Added visible result heading showing the calculated copy
-- Improved Clarity session review by displaying the layout word in the results area
-- Cache bumped for easier PWA updates
-
+* Traditional mode now prioritizes letter spacing close to counter width
+* Added visible result heading showing the calculated copy
+* Improved Clarity session review by displaying the layout word in the results area
+* Added service worker cache cleanup for easier PWA updates
+* Cache bumped for app update refresh
 
 ### v1.0.4
 

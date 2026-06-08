@@ -189,6 +189,31 @@ function getCounterOptions(stem, counterStyle) {
   return [...new Set(options)];
 }
 
+function scoreCandidate(candidate, targetWidth) {
+  const layout = candidate.recommended;
+
+  const spacingScore = candidate.letterSpaces > 0 && layout.counter > 0
+    ? Math.abs(1 - (layout.letterSpacing / layout.counter))
+    : 0;
+
+  const marginPenalty = targetWidth > 0
+    ? layout.leftover / targetWidth
+    : 0;
+
+  const stemPreference = targetWidth > 0
+    ? layout.stem / targetWidth
+    : 0;
+
+  const counterPenalty = candidate.counterStyle === "smaller"
+    ? Math.abs(layout.counterRatio - 0.85)
+    : 0;
+
+  // Main priority: letter spacing should live close to counter width.
+  // Secondary priority: avoid huge leftover margins.
+  // Tertiary priority: keep stems reasonably large.
+  return (spacingScore * 100) + (marginPenalty * 25) - (stemPreference * 15) + (counterPenalty * 3);
+}
+
 function calculateLayout(copyText, targetWidth, counterStyle = "smaller") {
   const counts = countCopy(copyText);
 
@@ -202,6 +227,8 @@ function calculateLayout(copyText, targetWidth, counterStyle = "smaller") {
   const step = 1 / DENOMINATOR;
 
   let stem = maxStem;
+  let bestCandidate = null;
+  let bestScore = Infinity;
 
   while (stem >= step) {
     const counterOptions = getCounterOptions(stem, counterStyle);
@@ -247,7 +274,7 @@ function calculateLayout(copyText, targetWidth, counterStyle = "smaller") {
         continue;
       }
 
-      return {
+      const candidate = {
         copy: counts.words.join(" "),
         targetWidth,
         words: counts.words,
@@ -272,9 +299,20 @@ function calculateLayout(copyText, targetWidth, counterStyle = "smaller") {
           letterSpacingToCounterRatio: counter ? letterSpacing / counter : 0
         }
       };
+
+      const score = scoreCandidate(candidate, targetWidth);
+
+      if (score < bestScore) {
+        bestScore = score;
+        bestCandidate = candidate;
+      }
     }
 
     stem -= step;
+  }
+
+  if (bestCandidate) {
+    return bestCandidate;
   }
 
   return {
