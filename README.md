@@ -2,97 +2,123 @@
 
 A lettering layout tool for sign painters.
 
-Built to help calculate traditional Phoenix (Condensed Gothic) lettering layouts without reaching for a calculator, scratch paper, or a headache.
+Built to help calculate Phoenix / Condensed Gothic / gas-pipe-style lettering layouts without reaching for a calculator, scratch paper, or a headache.
+
+## Live App
+
+https://phx.jjrugesignco.com
 
 ## Features
 
-* Stem width calculation
-* Counter width calculation
-* Letter spacing calculation
-* Word spacing calculation
-* Side margin calculation
-* Traditional Phoenix layout rules
-* Practical small-copy layout option
-* Mobile-friendly interface
-* Installable PWA
-* Offline support after first visit
-* Works on desktop and mobile
-* Goblin-powered encouragement
+- Unit-based Phoenix / Condensed Gothic layout engine
+- Stem width calculation
+- Counter width calculation
+- Letter spacing calculation
+- Word spacing calculation
+- Side margin calculation
+- Traditional unit-based layout style
+- Practical equal-unit layout style
+- Mobile-friendly interface
+- Installable PWA
+- Offline support after first visit
+- PHX icon pack
+- Goblin-powered encouragement
 
 ## Layout Styles
 
 ### Traditional
 
-Uses classic Phoenix proportions.
+Uses a unit-based condensed lettering approach inspired by gas-pipe / condensed gothic layout methods.
 
-* Counters are typically 55%–85% of stem width
-* Better for storefronts, gold leaf, and formal layouts
-* Closely follows traditional Phoenix construction
+The app first finds a useful layout unit, then derives the layout from that unit:
+
+- Stems are slightly heavier than the base unit
+- Counters stay close to the unit
+- Letter spacing stays close to the counter
+- Leftover width becomes side margins
+- Word spacing is treated as one normal Phoenix letter: **2 stems + 1 counter**
+
+This mode is meant for classic Phoenix / Condensed Gothic lettering where counters and spaces should feel visually related.
 
 ### Practical
 
-Uses equal stem and counter widths.
+Uses an equal-unit approach.
 
-* Counters match stem width
-* Useful for small copy and showcard work
-* Often produces more practical layouts at smaller sizes
-* Great for short words that would otherwise fail traditional proportion checks
+- Stem, counter, and letter spacing use the same unit
+- Useful for small copy and showcard work
+- Often produces more practical layouts at smaller sizes
+- Great for short words that would otherwise fail traditional proportion checks
 
 ## Current Version
 
-Version 1.0.6
+Version 2.0.0
 
 ## Changelog
 
+### v2.0.0
+
+- Rebuilt the layout engine around a unit-based condensed lettering model
+- Traditional mode now finds a common unit first, then adjusts stems, counters, and spacing
+- Letter spacing is treated as a primary visual spacing element, not just leftover width
+- Counters and letter spacing are kept visually related
+- Updated explanation text in results
+- Bumped PWA cache for release
+
 ### v1.0.6
 
-* Traditional mode now prioritizes letter spacing close to counter width
-* Added visible result heading showing the calculated copy
-* Improved Clarity session review by displaying the layout word in the results area
-* Added service worker cache cleanup for easier PWA updates
-* Cache bumped for app update refresh
+- Added visible result heading showing the calculated copy
+- Improved Clarity session review by displaying the layout word in the results area
+- Added spacing-priority logic in Traditional mode
+
+### v1.0.5
+
+- Traditional mode began prioritizing letter spacing close to counter width
+- Better candidate scoring instead of always choosing fattest stem first
+- README updated
+- Venmo fixed to @RevJhonSoda
+- Cache bumped to help phones update
 
 ### v1.0.4
 
-* Added Traditional and Practical layout styles
-* Replaced dropdown selector with quick-toggle buttons
-* Added PHX app icon pack
-* Added Apple Touch Icon support
-* Added favicon support
-* Improved mobile PWA experience
-* Improved installation experience on Android and iPhone
+- Added Traditional and Practical layout styles
+- Replaced dropdown selector with quick-toggle buttons
+- Added PHX app icon pack
+- Added Apple Touch Icon support
+- Added favicon support
+- Improved mobile PWA experience
+- Improved installation experience on Android and iPhone
 
 ### v1.0.3
 
-* Added side margin calculations
-* Improved small-copy layout handling
-* Improved spacing logic
-* Better support for short words and tight layouts
+- Added side margin calculations
+- Improved small-copy layout handling
+- Improved spacing logic
+- Better support for short words and tight layouts
 
 ### v1.0.2
 
-* Added side margin output
-* Added 1/16" spacing support
-* Improved layout fitting logic
+- Added side margin output
+- Added 1/16" spacing support
+- Improved layout fitting logic
 
 ### v1.0.1
 
-* Improved mobile layout
-* Refined color palette
-* Added Buy Me A Coffee button
-* Improved calculator layout
-* Refined goblin message styling
+- Improved mobile layout
+- Refined color palette
+- Added Buy Me A Coffee button
+- Improved calculator layout
+- Refined goblin message styling
 
 ## Planned Features
 
-* Visual layout preview
-* Grid-paper layout preview
-* Margin calculator
-* Additional lettering styles
-* Saved preferences
-* Layout explorer
-* Showcard tools
-* Multiple alphabet systems
+- Visual layout preview
+- Grid-paper layout preview
+- Margin calculator
+- Additional lettering styles
+- Saved preferences
+- Layout explorer
+- Showcard tools
+- Multiple alphabet systems
 
 ## Why?
 
@@ -100,10 +126,10 @@ Because sometimes you just want to paint the sign instead of doing fraction math
 
 Phoenix Layout Calculator was built by a sign painter for sign painters. The goal is simple:
 
-* Spend less time dividing fractions.
-* Spend more time painting signs.
-* Keep traditional lettering knowledge accessible.
-* Make layout decisions faster in the shop, at a meet, or on a job site.
+- Spend less time dividing fractions.
+- Spend more time painting signs.
+- Keep traditional lettering knowledge accessible.
+- Make layout decisions faster in the shop, at a meet, or on a job site.
 
 ## Install
 
@@ -111,7 +137,7 @@ Phoenix Layout Calculator was built by a sign painter for sign painters. The goa
 
 Visit:
 
-https://jrugejr.github.io/phoenix_calculator
+https://phx.jjrugesignco.com
 
 ### Android
 
@@ -130,11 +156,10 @@ Once installed, the app can continue working offline after the first visit.
 
 ## Support the Project
 
-If this tool saves you time, prevents a layout headache, or helps you paint more signs, consider buying me a coffee.
+If this tool saves you time, prevents a layout headache, or helps you paint more signs, consider buying the goblin a coffee.
 
 Venmo: **@RevJhonSoda**
 
 ## License
 
 MIT License
-

@@ -1,10 +1,10 @@
-const CACHE_NAME = "phoenix-calculator-v106";
+const CACHE_NAME = "phoenix-calculator-v200";
 
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
   "./style.css",
-  "./app.js?v=106",
+  "./app.js",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",

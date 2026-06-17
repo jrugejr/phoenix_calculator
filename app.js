@@ -1,10 +1,11 @@
 // ============================================================
 // PHOENIX LAYOUT CALCULATOR
-// Browser Version 1.0.6
+// Browser Version 2.0.0
+// Unit-based Condensed / Gas Pipe / Phoenix inspired engine
 // ============================================================
 
 const APP_NAME = "Phoenix Layout Calculator";
-const APP_VERSION = "1.0.6";
+const APP_VERSION = "2.0.0";
 
 const HECKLES = [
   "Wow dude, really? Using the app again? Do the math yourself.",
@@ -53,13 +54,13 @@ const LETTER_RULES = {
 };
 
 const DENOMINATOR = 8;
-const SPACING_DENOMINATOR = 16;
-const MIN_COUNTER_RATIO = 0.55;
-const MAX_COUNTER_RATIO = 0.85;
-const IDEAL_COUNTER_RATIOS = [0.70, 0.65, 0.60, 0.75, 0.55, 0.80, 0.85];
+const FINE_DENOMINATOR = 16;
+const TRADITIONAL_STEM_FACTORS = [1.125, 1.0625, 1.0, 1.1875, 1.25];
+const TRADITIONAL_COUNTER_FACTORS = [1.0, 0.9375, 0.875, 0.8125];
+const TRADITIONAL_SPACE_FACTORS = [1.0, 0.9375, 0.875, 1.0625];
 
 function roundDownToFraction(value, denominator = DENOMINATOR) {
-  return Math.floor(value * denominator) / denominator;
+  return Math.floor(value * denominator + 1e-9) / denominator;
 }
 
 function roundToFraction(value, denominator = DENOMINATOR) {
@@ -89,38 +90,28 @@ function formatInches(value) {
   const whole = Math.floor(numerator / denominator);
   numerator = numerator % denominator;
 
-  if (numerator === 0) {
-    return `${sign}${whole}"`;
-  }
+  if (numerator === 0) return `${sign}${whole}\"`;
 
   const divisor = gcd(numerator, denominator);
   const simpleNumerator = numerator / divisor;
   const simpleDenominator = denominator / divisor;
 
-  if (whole === 0) {
-    return `${sign}${simpleNumerator}/${simpleDenominator}"`;
-  }
+  if (whole === 0) return `${sign}${simpleNumerator}/${simpleDenominator}\"`;
 
-  return `${sign}${whole} ${simpleNumerator}/${simpleDenominator}"`;
+  return `${sign}${whole} ${simpleNumerator}/${simpleDenominator}\"`;
 }
 
 function validateCopy(text) {
   const words = text.trim().toUpperCase().split(/\s+/).filter(Boolean);
 
-  if (words.length === 0) {
-    throw new Error("Enter at least one word, layout wizard.");
-  }
-
-  if (words.length > 2) {
-    throw new Error("Whoa there, novelist. Version 1 only handles one or two words on a single line.");
-  }
+  if (words.length === 0) throw new Error("Enter at least one word, layout wizard.");
+  if (words.length > 2) throw new Error("Whoa there, novelist. Version 2 only handles one or two words on a single line.");
 
   return words;
 }
 
 function countCopy(text) {
   const words = validateCopy(text);
-
   let stems = 0;
   let counters = 0;
   let letterSpaces = 0;
@@ -131,20 +122,12 @@ function countCopy(text) {
     letterSpaces += Math.max(word.length - 1, 0);
 
     for (const char of word) {
-      if (!LETTER_RULES[char]) {
-        throw new Error(`Unsupported character: ${char}`);
-      }
+      if (!LETTER_RULES[char]) throw new Error(`Unsupported character: ${char}`);
 
       const [letterStems, letterCounters] = LETTER_RULES[char];
       stems += letterStems;
       counters += letterCounters;
-
-      letters.push({
-        char,
-        wordIndex,
-        stems: letterStems,
-        counters: letterCounters
-      });
+      letters.push({ char, wordIndex, stems: letterStems, counters: letterCounters });
     }
   });
 
@@ -159,174 +142,117 @@ function calculateWordSpace(stemWidth, counterWidth) {
   return (2 * stemWidth) + counterWidth;
 }
 
-function calculateBestLetterSpacing(remaining, letterSpaces, counter) {
-  if (letterSpaces <= 0) {
-    return 0;
-  }
+function buildCandidate(counts, targetWidth, values) {
+  const stem = values.stem;
+  const counter = values.counter;
+  const letterSpacing = values.letterSpacing;
+  const wordSpacing = counts.wordSpaces ? calculateWordSpace(stem, counter) : 0;
+  const totalWordSpace = counts.wordSpaces * wordSpacing;
+  const letterMass = calculateLetterMass(counts.stems, counts.counters, stem, counter);
+  const finalWidth = letterMass + totalWordSpace + (counts.letterSpaces * letterSpacing);
+  const leftover = targetWidth - finalWidth;
 
-  const exactSpace = remaining / letterSpaces;
-  const maxAllowed = Math.min(exactSpace, counter);
+  if (leftover < -0.0001) return null;
 
-  let spacing = roundDownToFraction(maxAllowed, DENOMINATOR);
-  const sixteenthSpacing = roundDownToFraction(maxAllowed, SPACING_DENOMINATOR);
+  const counterRatio = stem ? counter / stem : 0;
+  const spacingToCounterRatio = counter ? letterSpacing / counter : 0;
 
-  if (sixteenthSpacing > spacing) {
-    spacing = sixteenthSpacing;
-  }
-
-  return spacing;
+  return {
+    stem,
+    counter,
+    letterSpacing,
+    wordSpacing,
+    letterMass,
+    totalWordSpace,
+    finalWidth,
+    leftover: Math.max(0, leftover),
+    sideMargin: Math.max(0, leftover) / 2,
+    counterRatio,
+    letterSpacingToCounterRatio: spacingToCounterRatio,
+    unit: values.unit,
+    layoutStyle: values.layoutStyle
+  };
 }
 
-function getCounterOptions(stem, counterStyle) {
-  if (counterStyle === "equal") {
-    return [stem];
-  }
+function makeCandidates(counts, targetWidth, layoutStyle) {
+  const candidates = [];
+  const roughUnits = counts.stems + counts.counters + counts.letterSpaces + (counts.wordSpaces * 3);
+  const maxUnit = targetWidth / Math.max(roughUnits, 1);
+  const unitStep = 1 / FINE_DENOMINATOR;
+  let unit = roundDownToFraction(maxUnit, FINE_DENOMINATOR);
 
-  const options = IDEAL_COUNTER_RATIOS.map((ratio) =>
-    roundToFraction(stem * ratio, DENOMINATOR)
-  );
+  while (unit >= unitStep) {
+    if (layoutStyle === "equal") {
+      const cleanUnit = roundToFraction(unit, DENOMINATOR);
+      const candidate = buildCandidate(counts, targetWidth, {
+        unit,
+        stem: cleanUnit,
+        counter: cleanUnit,
+        letterSpacing: cleanUnit,
+        layoutStyle
+      });
+      if (candidate) candidates.push(candidate);
+    } else {
+      for (const stemFactor of TRADITIONAL_STEM_FACTORS) {
+        for (const counterFactor of TRADITIONAL_COUNTER_FACTORS) {
+          for (const spaceFactor of TRADITIONAL_SPACE_FACTORS) {
+            const stem = roundToFraction(unit * stemFactor, FINE_DENOMINATOR);
+            const counter = roundToFraction(unit * counterFactor, FINE_DENOMINATOR);
+            const letterSpacing = roundToFraction(unit * spaceFactor, FINE_DENOMINATOR);
 
-  return [...new Set(options)];
-}
+            if (stem <= 0 || counter <= 0 || letterSpacing <= 0) continue;
+            if (counter > stem) continue;
+            if (letterSpacing < counter * 0.75 || letterSpacing > counter * 1.15) continue;
 
-function scoreCandidate(candidate, targetWidth) {
-  const layout = candidate.recommended;
-
-  const spacingScore = candidate.letterSpaces > 0 && layout.counter > 0
-    ? Math.abs(1 - (layout.letterSpacing / layout.counter))
-    : 0;
-
-  const marginPenalty = targetWidth > 0
-    ? layout.leftover / targetWidth
-    : 0;
-
-  const stemPreference = targetWidth > 0
-    ? layout.stem / targetWidth
-    : 0;
-
-  const counterPenalty = candidate.counterStyle === "smaller"
-    ? Math.abs(layout.counterRatio - 0.85)
-    : 0;
-
-  // Main priority: letter spacing should live close to counter width.
-  // Secondary priority: avoid huge leftover margins.
-  // Tertiary priority: keep stems reasonably large.
-  return (spacingScore * 100) + (marginPenalty * 25) - (stemPreference * 15) + (counterPenalty * 3);
-}
-
-function calculateLayout(copyText, targetWidth, counterStyle = "smaller") {
-  const counts = countCopy(copyText);
-
-  const stems = counts.stems;
-  const counters = counts.counters;
-  const letterSpaces = counts.letterSpaces;
-  const wordSpaces = counts.wordSpaces;
-
-  const maxEqualUnit = targetWidth / (stems + counters);
-  const maxStem = roundDownToFraction(maxEqualUnit, DENOMINATOR);
-  const step = 1 / DENOMINATOR;
-
-  let stem = maxStem;
-  let bestCandidate = null;
-  let bestScore = Infinity;
-
-  while (stem >= step) {
-    const counterOptions = getCounterOptions(stem, counterStyle);
-
-    for (const counter of counterOptions) {
-      if (counter <= 0) {
-        continue;
-      }
-
-      const counterRatio = counter / stem;
-
-      if (counterStyle === "smaller") {
-        if (counterRatio < MIN_COUNTER_RATIO || counterRatio > MAX_COUNTER_RATIO) {
-          continue;
+            const candidate = buildCandidate(counts, targetWidth, {
+              unit,
+              stem,
+              counter,
+              letterSpacing,
+              layoutStyle
+            });
+            if (candidate) candidates.push(candidate);
+          }
         }
-      }
-
-      const letterMass = calculateLetterMass(stems, counters, stem, counter);
-      const singleWordSpace = calculateWordSpace(stem, counter);
-      const totalWordSpace = wordSpaces * singleWordSpace;
-      const remaining = targetWidth - letterMass - totalWordSpace;
-
-      if (remaining < 0) {
-        continue;
-      }
-
-      const letterSpacing = calculateBestLetterSpacing(remaining, letterSpaces, counter);
-
-      if (letterSpaces > 0) {
-        if (letterSpacing <= 0) {
-          continue;
-        }
-
-        if (letterSpacing > counter) {
-          continue;
-        }
-      }
-
-      const finalWidth = letterMass + totalWordSpace + (letterSpacing * letterSpaces);
-      const leftover = targetWidth - finalWidth;
-
-      if (leftover < 0) {
-        continue;
-      }
-
-      const candidate = {
-        copy: counts.words.join(" "),
-        targetWidth,
-        words: counts.words,
-        stems,
-        counters,
-        letterSpaces,
-        wordSpaces,
-        letters: counts.letters,
-        maxEqualUnit,
-        counterStyle,
-        recommended: {
-          stem,
-          counter,
-          letterSpacing,
-          wordSpacing: wordSpaces ? singleWordSpace : 0,
-          letterMass,
-          totalWordSpace,
-          finalWidth,
-          leftover,
-          sideMargin: leftover / 2,
-          counterRatio,
-          letterSpacingToCounterRatio: counter ? letterSpacing / counter : 0
-        }
-      };
-
-      const score = scoreCandidate(candidate, targetWidth);
-
-      if (score < bestScore) {
-        bestScore = score;
-        bestCandidate = candidate;
       }
     }
-
-    stem -= step;
+    unit -= unitStep;
   }
 
-  if (bestCandidate) {
-    return bestCandidate;
-  }
+  return candidates;
+}
+
+function scoreCandidate(candidate) {
+  const spacingScore = Math.abs(candidate.letterSpacingToCounterRatio - 1.0);
+  const counterScore = candidate.layoutStyle === "equal"
+    ? 0
+    : Math.abs(candidate.counterRatio - 0.88);
+  const leftoverScore = candidate.leftover * 0.03;
+  const unitBonus = -candidate.unit * 0.015;
+  const stemBonus = -candidate.stem * 0.01;
+
+  return (spacingScore * 8) + (counterScore * 4) + leftoverScore + unitBonus + stemBonus;
+}
+
+function calculateLayout(copyText, targetWidth, layoutStyle = "smaller") {
+  const counts = countCopy(copyText);
+  const candidates = makeCandidates(counts, targetWidth, layoutStyle);
+  const recommended = candidates.length
+    ? candidates.sort((a, b) => scoreCandidate(a) - scoreCandidate(b))[0]
+    : null;
 
   return {
     copy: counts.words.join(" "),
     targetWidth,
     words: counts.words,
-    stems,
-    counters,
-    letterSpaces,
-    wordSpaces,
+    stems: counts.stems,
+    counters: counts.counters,
+    letterSpaces: counts.letterSpaces,
+    wordSpaces: counts.wordSpaces,
     letters: counts.letters,
-    maxEqualUnit,
-    counterStyle,
-    recommended: null
+    maxEqualUnit: targetWidth / Math.max((counts.stems + counts.counters), 1),
+    layoutStyle,
+    recommended
   };
 }
 
@@ -351,10 +277,7 @@ function renderBreakdown(letters) {
 
 function setTextIfExists(id, text) {
   const element = document.getElementById(id);
-
-  if (element) {
-    element.textContent = text;
-  }
+  if (element) element.textContent = text;
 }
 
 function renderLayout(result) {
@@ -368,7 +291,6 @@ function renderLayout(result) {
   clearError();
 
   setTextIfExists("layoutTitle", `Recommended Layout for ${result.copy}`);
-
   setTextIfExists("stemOutput", formatInches(layout.stem));
   setTextIfExists("counterOutput", formatInches(layout.counter));
   setTextIfExists("letterSpaceOutput", formatInches(layout.letterSpacing));
@@ -378,7 +300,6 @@ function renderLayout(result) {
   setTextIfExists("sideMarginOutput", `${formatInches(layout.sideMargin)} each`);
 
   const wordSpaceRow = document.getElementById("wordSpaceRow");
-
   if (wordSpaceRow) {
     if (result.wordSpaces > 0) {
       wordSpaceRow.style.display = "flex";
@@ -388,14 +309,11 @@ function renderLayout(result) {
     }
   }
 
-  const counterDescription =
-    result.counterStyle === "equal"
-      ? "Counters are set equal to the stems for a practical small-copy layout."
-      : `Counter is about <strong>${Math.round(layout.counterRatio * 100)}%</strong> of the stem.`;
+  const modeName = result.layoutStyle === "equal" ? "Practical equal-unit mode" : "Traditional unit mode";
 
   let why = `
-    <p>Uses the largest clean stem width that passes the Phoenix checks.</p>
-    <p>${counterDescription}</p>
+    <p>${modeName}: finds a common unit first, then derives stems, counters, and spacing from that unit.</p>
+    <p>Counter is about <strong>${Math.round(layout.counterRatio * 100)}%</strong> of the stem.</p>
     <p>Letter spacing is about <strong>${Math.round(layout.letterSpacingToCounterRatio * 100)}%</strong> of the counter.</p>
   `;
 
@@ -404,34 +322,27 @@ function renderLayout(result) {
   }
 
   why += `<p>Any leftover width is split into side margins.</p>`;
-  why += `<p>Stems and counters prioritize 1/8&quot; marks. Letter spacing may use 1/16&quot; when it creates a cleaner fit.</p>`;
+  why += `<p>v2.0 uses a condensed/gas-pipe style unit approach: find a useful unit, then keep counters and letter spacing visually related.</p>`;
 
   const whyOutput = document.getElementById("whyOutput");
-  if (whyOutput) {
-    whyOutput.innerHTML = why;
-  }
+  if (whyOutput) whyOutput.innerHTML = why;
 
   const breakdownOutput = document.getElementById("breakdownOutput");
-  if (breakdownOutput) {
-    breakdownOutput.innerHTML = renderBreakdown(result.letters);
-  }
+  if (breakdownOutput) breakdownOutput.innerHTML = renderBreakdown(result.letters);
 
   document.getElementById("results").classList.add("active");
 }
 
 function getSelectedCounterStyle() {
   const activeCounterOption = document.querySelector(".counter-option.active");
-
-  return activeCounterOption
-    ? activeCounterOption.dataset.counterStyle
-    : "smaller";
+  return activeCounterOption ? activeCounterOption.dataset.counterStyle : "smaller";
 }
 
 function handleCalculate() {
   const copyText = document.getElementById("copyInput").value;
   const widthText = document.getElementById("widthInput").value;
   const targetWidth = Number(widthText);
-  const counterStyle = getSelectedCounterStyle();
+  const layoutStyle = getSelectedCounterStyle();
 
   document.getElementById("heckle").textContent = randomHeckle();
 
@@ -440,7 +351,7 @@ function handleCalculate() {
       throw new Error("Target width must be a number bigger than zero, boss.");
     }
 
-    const result = calculateLayout(copyText, targetWidth, counterStyle);
+    const result = calculateLayout(copyText, targetWidth, layoutStyle);
     renderLayout(result);
   } catch (error) {
     showError(error.message);
@@ -451,23 +362,16 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("calculateButton").addEventListener("click", handleCalculate);
 
   document.getElementById("copyInput").addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      handleCalculate();
-    }
+    if (event.key === "Enter") handleCalculate();
   });
 
   document.getElementById("widthInput").addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      handleCalculate();
-    }
+    if (event.key === "Enter") handleCalculate();
   });
 
   document.querySelectorAll(".counter-option").forEach((button) => {
     button.addEventListener("click", () => {
-      document.querySelectorAll(".counter-option").forEach((btn) => {
-        btn.classList.remove("active");
-      });
-
+      document.querySelectorAll(".counter-option").forEach((btn) => btn.classList.remove("active"));
       button.classList.add("active");
     });
   });
