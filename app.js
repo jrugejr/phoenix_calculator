@@ -331,6 +331,8 @@ function renderLayout(result) {
   if (breakdownOutput) breakdownOutput.innerHTML = renderBreakdown(result.letters);
 
   document.getElementById("results").classList.add("active");
+
+  if (window.PhoenixPreview) window.PhoenixPreview.render(result);
 }
 
 function getSelectedCounterStyle() {
