@@ -5,14 +5,14 @@ const fs = require("node:fs");
 const vm = require("node:vm");
 
 function loadSource(path, context) {
-  vm.runInNewContext(fs.readFileSync(path, "utf8"), context, { filename: path });
+  vm.runInContext(fs.readFileSync(path, "utf8"), context, { filename: path });
 }
 
 const documentStub = { addEventListener() {} };
-const context = { window: {}, document: documentStub };
+const context = vm.createContext({ window: {}, document: documentStub });
 loadSource("app.js", context);
 loadSource("phoenix-preview.js", context);
-const calc = vm.runInNewContext("calculateLayout", context);
+const calc = vm.runInContext("calculateLayout", context);
 const preview = context.window.PhoenixPreview;
 
 test("all 26 uppercase glyphs have a measured construction", () => {
