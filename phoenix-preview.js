@@ -45,6 +45,20 @@
       }
       paths.push(paintPath(d, stem, component));
     };
+    // Filled Phoenix construction pieces preserve the exact squared or curved
+    // terminal silhouette without half-stroke cap gaps at the red boundary.
+    // Unioning the pieces is non-additive, so overlapping joins never thicken.
+    const namedFill = (component, d) => {
+      const recipe = RECIPES[char];
+      if (!recipe.fixed.includes(component) && !recipe.stretch.includes(component)) {
+        throw new Error("Unknown " + char + " component: " + component);
+      }
+      paths.push('<path data-phoenix-component="' + component +
+        '" d="' + d + '" fill="currentColor"/>');
+    };
+    const rectShape = (left, top, width, tall) =>
+      "M " + x(left) + " " + x(top) + " h " + x(width) +
+      " v " + x(tall) + " h " + x(-width) + " Z";
     const segment = (a, b, c, d) =>
       "M " + x(a) + " " + x(b) + " L " + x(c) + " " + x(d);
     const stroke = (a, b, c, d) => add(segment(a, b, c, d));
@@ -220,22 +234,74 @@
       case "V":
         add("M " + x(L) + " " + x(T) + " L " + x(X) + " " + x(B) + " L " + x(R) + " " + x(T));
         break;
-      case "W":
-        add("M " + x(L) + " " + x(T) +
-            " L " + x(L + (X - L) * .42) + " " + x(B) +
-            " L " + x(X) + " " + x(T + s * 2) +
-            " L " + x(X + (R - X) * .58) + " " + x(B) +
-            " L " + x(R) + " " + x(T));
+      case "W": {
+        // Five true columns: stem / counter / stem / counter / stem.
+        // Counter cells contribute the bottom closures only.
+        const C1 = s + counter, C2 = 2 * s + counter;
+        const R0 = 2 * s + 2 * counter;
+        const cr = Math.min(s * .52, height * .055);
+        // Outer left and right bottom returns are quarter-circle terminals.
+        namedFill("leftStem", "M 0 0 H " + x(s) + " V " + x(height) +
+          " H " + x(cr) + " Q 0 " + x(height) + " 0 " + x(height - cr) + " Z");
+        // A central double-shouldered lower point, built as one fixed stem.
+        // Its left and right corners curl *inward* at the baseline.
+        namedFill("middleStemSystem", "M " + x(C1) + " 0 H " + x(C2) +
+          " V " + x(height) + " Q " + x(C1 + s / 2) + " " + x(height) +
+          " " + x(C1 + s / 2) + " " + x(height - cr) +
+          " Q " + x(C1 + s / 2) + " " + x(height) +
+          " " + x(C1) + " " + x(height) + " Z");
+        namedFill("rightStem", "M " + x(R0) + " 0 H " + x(width) +
+          " V " + x(height - cr) + " Q " + x(width) + " " + x(height) +
+          " " + x(width - cr) + " " + x(height) + " H " + x(R0) + " Z");
+        namedFill("leftLowerCounter", rectShape(s, height - s, counter, s));
+        namedFill("rightLowerCounter", rectShape(C2, height - s, counter, s));
         break;
-      case "X":
-        stroke(L, T, R, B);
-        stroke(R, T, L, B);
+      }
+      case "X": {
+        // Four upright lobes, pinched at the outer edges at the middle,
+        // joined by one horizontal, constant-thickness center strike.
+        const mid = height / 2;
+        const half = s / 2, cr = Math.min(s * .5, height * .055);
+        namedFill("upperLeft", "M 0 0 H " + x(s) + " V " + x(mid + half) +
+          " H " + x(cr) + " Q 0 " + x(mid + half) + " 0 " + x(mid + half - cr) + " Z");
+        namedFill("lowerLeft", "M 0 " + x(mid - half + cr) +
+          " Q 0 " + x(mid - half) + " " + x(cr) + " " + x(mid - half) +
+          " H " + x(s) + " V " + x(height) + " H 0 Z");
+        namedFill("upperRight", "M " + x(s + counter) + " 0 H " + x(width) +
+          " V " + x(mid + half - cr) + " Q " + x(width) +
+          " " + x(mid + half) + " " + x(width - cr) + " " + x(mid + half) +
+          " H " + x(s + counter) + " Z");
+        namedFill("lowerRight", "M " + x(s + counter) + " " + x(mid - half) +
+          " H " + x(width - cr) + " Q " + x(width) + " " + x(mid - half) +
+          " " + x(width) + " " + x(mid - half + cr) + " V " + x(height) +
+          " H " + x(s + counter) + " Z");
+        namedFill("centerJoin", rectShape(s, mid - half, counter, s));
         break;
-      case "Y":
-        stroke(L, T, X, M);
-        stroke(R, T, X, M);
-        stroke(X, M, X, B);
+      }
+      case "Y": {
+        // User's construction is NOT the conventional fork-shaped Y.
+        // Left column has separated upper/lower terminals, right column
+        // continues full height, and two counter-column connectors join them.
+        const upperY = height * .55, lowerY = height - s;
+        const cr = Math.min(s * .5, height * .05);
+        namedFill("leftUpperStem", "M 0 0 H " + x(s) +
+          " V " + x(upperY - cr) +
+          " Q " + x(s) + " " + x(upperY) +
+          " " + x(s - cr) + " " + x(upperY) +
+          " H 0 Z");
+        namedFill("leftLowerStem", "M 0 " + x(lowerY) +
+          " H " + x(s - cr) + " Q " + x(s) + " " + x(lowerY) +
+          " " + x(s) + " " + x(lowerY + cr) +
+          " V " + x(height) + " H 0 Z");
+        namedFill("upperJoin", rectShape(s, upperY - s, counter, s));
+        namedFill("lowerJoin", rectShape(s, height - s, counter, s));
+        // Inward lower return: round the right stem's bottom-left corner.
+        namedFill("rightStem", "M " + x(s + counter) + " 0 H " + x(width) +
+          " V " + x(height) + " H " + x(s + counter + cr) +
+          " Q " + x(s + counter) + " " + x(height) +
+          " " + x(s + counter) + " " + x(height - cr) + " Z");
         break;
+      }
       case "Z":
         stroke(L, T, R, T);
         stroke(R, T, L, B);
