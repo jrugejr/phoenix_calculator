@@ -59,17 +59,20 @@
 
     switch (char) {
       case "A":
-        add("M " + x(L) + " " + x(B) + " L " + x(X) + " " + x(T) + " L " + x(R) + " " + x(B));
-        stroke((L + X) / 2, M, (R + X) / 2, M);
+        // Phoenix A: twin upright stems, a top connector and low crossbar.
+        stroke(L, T, L, B);
+        stroke(R, T, R, B);
+        stroke(L, T, R, T);
+        stroke(L, T + (B - T) * .66, R, T + (B - T) * .66);
         break;
       case "B":
+        // Two stems, top and bottom connectors, and a slightly raised middle bar.
+        // The upper counter is shorter vertically than the lower counter.
         stroke(L, T, L, B);
-        add("M " + x(L) + " " + x(T) +
-            " C " + x(R) + " " + x(T) + " " + x(R) + " " + x(M - s * .65) + " " + x(R) + " " + x(M - s * .35) +
-            " Q " + x(R) + " " + x(M) + " " + x(L) + " " + x(M));
-        add("M " + x(L) + " " + x(M) +
-            " Q " + x(R) + " " + x(M) + " " + x(R) + " " + x(M + s * .5) +
-            " C " + x(R) + " " + x(B - s * .25) + " " + x(R) + " " + x(B) + " " + x(L) + " " + x(B));
+        stroke(R, T, R, B);
+        stroke(L, T, R, T);
+        stroke(L, T + (B - T) * .44, R, T + (B - T) * .44);
+        stroke(L, B, R, B);
         break;
       case "C":
         roundC();
@@ -126,11 +129,13 @@
         add("M " + x(L) + " " + x(T) + " L " + x(X) + " " + x(T + s * 2.05) + " L " + x(R) + " " + x(T));
         break;
       case "N":
+        // Phoenix N is an uppercase-height lowercase n, NOT a diagonal N.
+        // The upper connector rounds into the right vertical stem.
         stroke(L, T, L, B);
-        add("M " + x(R - s * .42) + " " + x(T) +
-            " Q " + x(R) + " " + x(T) + " " + x(R) + " " + x(T + s * .5) +
+        add("M " + x(L) + " " + x(T) +
+            " H " + x(R - s * .55) +
+            " Q " + x(R) + " " + x(T) + " " + x(R) + " " + x(T + s * .55) +
             " V " + x(B));
-        stroke(L, T, R, B);
         break;
       case "O":
         roundO();
@@ -232,7 +237,16 @@
         stem <= 0 || counter <= 0 || target <= 0) {
       throw new Error("Invalid dimensions supplied to Phoenix preview.");
     }
-    const height = stem * 7.6; // illustrative only: the current app has no height input
+    // Height controls only the vertical construction. Calculated widths never change.
+    const height = options && options.height !== undefined
+      ? Number(options.height) : target / 2;
+    if (!Number.isFinite(height) || height <= 0) {
+      throw new Error("Preview letter height must be a positive number.");
+    }
+    if (height < stem * 3.2) {
+      throw new Error("That preview height is too short for the calculated " +
+        "stroke (" + n(stem) + " in). Increase the preview height; Phoenix's width math stays unchanged.");
+    }
     const y = stem * 1.15;
     const boxH = height + 2 * y;
     const guides = Boolean(options && options.guides);
@@ -308,12 +322,21 @@
     if (!container) return;
     const toggler = document.getElementById("previewGuides");
     try {
-      const data = buildSvg(result, { guides: toggler && toggler.checked });
+      const heightInput = document.getElementById("previewHeightInput");
+      const rawHeight = heightInput ? heightInput.value.trim() : "";
+      const manualHeight = rawHeight !== "";
+      const height = manualHeight ? Number(rawHeight) : result.targetWidth / 2;
+      const data = buildSvg(result, { guides: toggler && toggler.checked, height });
       container.innerHTML = data.svg;
       const note = document.getElementById("previewStatus");
-      if (note) note.textContent = "Red outline = requested width. Letter height is illustrative; Phoenix currently calculates width only.";
+      if (note) note.textContent = "Letter height: " + n(data.height) +
+        " in" + (manualHeight ? " (custom)" : " (automatic: half target width)") +
+        ". Red outline shows the requested " + n(result.targetWidth) +
+        " in width. Preview height is visual only; Phoenix calculations are unchanged.";
     } catch (err) {
       container.textContent = "Preview unavailable: " + err.message;
+      const note = document.getElementById("previewStatus");
+      if (note) note.textContent = "The Phoenix calculation above is still valid; only the illustrative preview needs a different height.";
     }
   }
 
@@ -321,6 +344,10 @@
     document.addEventListener("DOMContentLoaded", () => {
       const toggler = document.getElementById("previewGuides");
       if (toggler) toggler.addEventListener("change", () => {
+        if (currentResult) render(currentResult);
+      });
+      const heightInput = document.getElementById("previewHeightInput");
+      if (heightInput) heightInput.addEventListener("input", () => {
         if (currentResult) render(currentResult);
       });
     });
