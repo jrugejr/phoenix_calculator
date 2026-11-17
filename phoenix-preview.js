@@ -127,7 +127,9 @@
         break;
       case "N":
         stroke(L, T, L, B);
-        stroke(R, T, R, B);
+        add("M " + x(R - s * .42) + " " + x(T) +
+            " Q " + x(R) + " " + x(T) + " " + x(R) + " " + x(T + s * .5) +
+            " V " + x(B));
         stroke(L, T, R, B);
         break;
       case "O":
