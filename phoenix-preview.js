@@ -96,7 +96,7 @@
             " C " + x(X) + " " + x(T) + " " + x(L) + " " + x(T) + " " + x(L) + " " + x(T + s * 1.45) +
             " V " + x(B - s * 1.45) +
             " C " + x(L) + " " + x(B) + " " + x(X) + " " + x(B) + " " + x(R) + " " + x(B) +
-            " V " + x(M + s * .22) + " H " + x(L + s * .67));
+            " V " + x(M + s * .22) + " H " + x(L + s + counter * .52));
         break;
       case "H":
         stroke(L, T, L, B);
