@@ -61,6 +61,9 @@ Version 2.1.0
 ### v2.1.0 (preview branch)
 
 - Added an SVG layout workbench using the calculator's actual stem, counter, spacing, and margin measurements
+- Archived the sign painter's A–Z construction vocabulary in phoenix-recipes.js; glyph widths now come directly from these recipes
+- Converted A, B, C, G, N, and S to individually named modular structural components (the remaining glyphs retain provisional contours)
+- The red boundary's top and bottom are exactly the requested letter-height edges; no internal vertical padding
 - Built uppercase A-Z as individually constructed strokes and curves, without loading or tracing a font
 - Preserved a fixed calculated stroke thickness across rows, columns, and curves
 - Added optional counter/stroke construction guides and the red target-width box
