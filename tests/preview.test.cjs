@@ -11,6 +11,7 @@ function loadSource(path, context) {
 const documentStub = { addEventListener() {} };
 const context = vm.createContext({ window: {}, document: documentStub });
 loadSource("app.js", context);
+loadSource("phoenix-recipes.js", context);
 loadSource("phoenix-preview.js", context);
 const calc = vm.runInContext("calculateLayout", context);
 const preview = context.window.PhoenixPreview;
@@ -74,7 +75,10 @@ test("automatic preview height is half the requested width; custom height is ind
 
 test("the Phoenix N is an arch with a continuous top connector, not a diagonal", () => {
   const svg = preview.makeGlyph("N", 1, 0.85, 8);
-  assert.equal((svg.match(/<path /g) || []).length, 2, "two strokes only: left stem and rounded connector/right stem");
+  assert.equal((svg.match(/<path /g) || []).length, 3, "three components: left stem, rounded bridge and right stem");
+  for (const name of ["leftStem", "topBridge", "rightStem"]) {
+    assert.ok(svg.includes('data-phoenix-component="' + name + '"'), "N uses " + name);
+  }
   assert.ok(svg.includes(" H "), "N has a horizontal top connector");
   assert.ok(svg.includes(" Q "), "N has rounded top right shoulder");
 });
@@ -90,4 +94,33 @@ test("too-short preview heights are rejected instead of changing the stem", () =
   const result = calc("S", 16, "smaller");
   assert.throws(() => preview.buildSvg(result, {}), /too short/);
   assert.ok(result.recommended.stem > 0, "original calculator remains valid");
+});
+
+test("S is made from opposing shells with named connectors, not a generic spline", () => {
+  const svg = preview.makeGlyph("S", 1, .875, 8);
+  const components = [
+    "upperLeftShell", "upperRightTerminal", "lowerLeftTerminal",
+    "lowerRightShell", "topBridge", "middleStrike", "bottomBridge"
+  ];
+  for (const name of components) {
+    assert.ok(svg.includes('data-phoenix-component="' + name + '"'), "S contains " + name);
+  }
+  assert.equal((svg.match(/<path /g) || []).length, 7);
+});
+
+test("Phoenix A is assembled as left, center, right structural groups", () => {
+  const svg = preview.makeGlyph("A", 1, .875, 8);
+  for (const name of ["leftStemCap", "centerBridge", "crossbar", "rightStemCap"]) {
+    assert.ok(svg.includes('data-phoenix-component="' + name + '"'), "A uses " + name);
+  }
+});
+
+test("the red frame uses exactly the selected letter height", () => {
+  const result = calc("SIGNS", 16, "smaller");
+  const out = preview.buildSvg(result, { height: 8 });
+  assert.equal(out.height, 8);
+  assert.ok(out.svg.includes('<rect x="0" y="0" width="16" height="8"'), "Red frame exactly 16 by 8");
+  assert.ok(out.svg.includes('transform="translate('), "Glyphs are placed in frame");
+  assert.ok(!out.svg.includes('translate(0.'),
+    "No assumption that left margin vanishes");
 });
