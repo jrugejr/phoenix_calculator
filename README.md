@@ -23,6 +23,9 @@ https://phx.jjrugesignco.com
 - Offline support after first visit
 - PHX icon pack
 - Goblin-powered encouragement
+- Variable-grid SVG lettering preview (uppercase A-Z)
+- Red target-width boundary and construction-guide toggle
+- Editable preview-only letter height (automatic default: half of target width)
 
 ## Layout Styles
 
@@ -51,9 +54,28 @@ Uses an equal-unit approach.
 
 ## Current Version
 
-Version 2.0.0
+Version 2.1.0
 
 ## Changelog
+
+### v2.1.0 (preview branch)
+
+- Added an SVG layout workbench using the calculator's actual stem, counter, spacing, and margin measurements
+- Archived the sign painter's A–Z construction vocabulary in phoenix-recipes.js; glyph widths now come directly from these recipes
+- Converted A, B, C, G, N, and S to individually named modular structural components (the remaining glyphs retain provisional contours)
+- Implemented W, X, and Y with **solid filled, individually named structural pieces** based on reference sketches
+- Phoenix Y uses separated left upper/lower stems, upper/lower counter connectors, a continuous right stem, and curved inward terminals (rather than the generic fork-shape)
+- Added WXY and Y component diagrams for the next visual review; remaining letterforms still require reference-based calibration
+- The red boundary's top and bottom are exactly the requested letter-height edges; no internal vertical padding
+- Built uppercase A-Z as individually constructed strokes and curves, without loading or tracing a font
+- Preserved a fixed calculated stroke thickness across rows, columns, and curves
+- Added optional counter/stroke construction guides and the red target-width box
+- Updated PWA cache and included width-consistency regression tests
+- Preview letter height defaults to half the target width (e.g. 16-inch line -> 8-inch tall letters), with a separate optional input for custom height; does not change any calculator measurements
+- Updated A and B to use horizontal Phoenix connectors and N to use a rounded uppercase-height lowercase-n construction, rather than a conventional diagonal N
+- Very short display heights can be geometrically impossible with the calculated stroke; the preview explains the issue without altering the layout math
+- Prototype glyph contours still require visual review before merging into production
+
 
 ### v2.0.0
 
@@ -111,8 +133,8 @@ Version 2.0.0
 
 ## Planned Features
 
-- Visual layout preview
-- Grid-paper layout preview
+- Letter-height input and height-aware preview
+- More precise optical corrections and corner radii
 - Margin calculator
 - Additional lettering styles
 - Saved preferences

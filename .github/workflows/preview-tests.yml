@@ -1,0 +1,23 @@
+name: Phoenix preview checks
+
+on:
+  pull_request:
+    paths:
+      - 'app.js'
+      - 'phoenix-preview.js'
+      - 'tests/**'
+      - '.github/workflows/preview-tests.yml'
+  push:
+    branches:
+      - 'feature/variable-grid-preview'
+
+jobs:
+  preview-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test Phoenix lettering renderer
+        run: node --test tests/preview.test.cjs
