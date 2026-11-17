@@ -3,15 +3,13 @@
 (function () {
   "use strict";
 
-  const RULES = {
-    A: [2, 1], B: [2, 1], C: [2, 1], D: [2, 1],
-    E: [1, 1], F: [1, 1], G: [2, 1], H: [2, 1],
-    I: [1, 0], J: [2, 1], K: [2, 1], L: [1, 1],
-    M: [3, 2], N: [2, 1], O: [2, 1], P: [2, 1],
-    Q: [2, 1], R: [2, 1], S: [2, 1], T: [1, 1],
-    U: [2, 1], V: [2, 1], W: [3, 2], X: [2, 1],
-    Y: [2, 1], Z: [2, 1]
-  };
+  // The construction recipe data is shared by the renderer and test harness.
+  const RECIPES = window.PHOENIX_RECIPES;
+  if (!RECIPES) throw new Error("Phoenix recipes must load before the renderer.");
+  const RULES = Object.fromEntries(Object.entries(RECIPES).map(([letter, recipe]) => [
+    letter, [recipe.width.filter(v => v === "stem").length,
+             recipe.width.filter(v => v === "counter").length]
+  ]));
 
   function n(x) {
     return String(Math.round(x * 100000) / 100000);
@@ -26,8 +24,9 @@
   // Each path is a centerline. A single, calculated stroke width applies
   // to verticals, horizontals and curved portions alike; no glyph is
   // independently horizontally stretched to fit its advance.
-  function paintPath(d, stem) {
-    return '<path d="' + d + '" fill="none" stroke="currentColor" stroke-width="' +
+  function paintPath(d, stem, component) {
+    return '<path' + (component ? ' data-phoenix-component="' + component + '"' : '') +
+      ' d="' + d + '" fill="none" stroke="currentColor" stroke-width="' +
       n(stem) + '" stroke-linecap="butt" stroke-linejoin="round"/>';
   }
 
@@ -39,8 +38,16 @@
     const x = n, s = stem;
     const paths = [];
     const add = (d) => paths.push(paintPath(d, stem));
-    const stroke = (a, b, c, d) =>
-      add("M " + x(a) + " " + x(b) + " L " + x(c) + " " + x(d));
+    const named = (component, d) => {
+      const recipe = RECIPES[char];
+      if (!recipe.fixed.includes(component) && !recipe.stretch.includes(component)) {
+        throw new Error("Unknown " + char + " component: " + component);
+      }
+      paths.push(paintPath(d, stem, component));
+    };
+    const segment = (a, b, c, d) =>
+      "M " + x(a) + " " + x(b) + " L " + x(c) + " " + x(d);
+    const stroke = (a, b, c, d) => add(segment(a, b, c, d));
     const roundO = () => {
       add("M " + x(X) + " " + x(T) +
           " C " + x(R) + " " + x(T) + " " + x(R) + " " + x(T + s * .5) + " " + x(R) + " " + x(T + s * 1.45) +
@@ -59,23 +66,40 @@
 
     switch (char) {
       case "A":
-        // Phoenix A: twin upright stems, a top connector and low crossbar.
-        stroke(L, T, L, B);
-        stroke(R, T, R, B);
-        stroke(L, T, R, T);
-        stroke(L, T + (B - T) * .66, R, T + (B - T) * .66);
+        // Three user-defined assemblies: left stroke, center connector system,
+        // right stroke. Each side has its own rounded shoulder at the top.
+        named("leftStemCap", "M " + x(L) + " " + x(B) +
+          " V " + x(T + s * .65) +
+          " Q " + x(L) + " " + x(T) + " " + x(L + s * .65) + " " + x(T));
+        named("centerBridge", segment(L + s * .65, T, R - s * .65, T));
+        // centerCounter is negative space: its width is the calculated counter.
+        named("crossbar", segment(L, M, R, M));
+        named("rightStemCap", "M " + x(R) + " " + x(B) +
+          " V " + x(T + s * .65) +
+          " Q " + x(R) + " " + x(T) + " " + x(R - s * .65) + " " + x(T));
         break;
       case "B":
-        // Two stems, top and bottom connectors, and a slightly raised middle bar.
-        // The upper counter is shorter vertically than the lower counter.
-        stroke(L, T, L, B);
-        stroke(R, T, R, B);
-        stroke(L, T, R, T);
-        stroke(L, T + (B - T) * .44, R, T + (B - T) * .44);
-        stroke(L, B, R, B);
+        named("leftStem", segment(L, T, L, B));
+        named("rightBowlShell", "M " + x(R - s * .65) + " " + x(T) +
+          " Q " + x(R) + " " + x(T) + " " + x(R) + " " + x(T + s * .65) +
+          " V " + x(B - s * .65) +
+          " Q " + x(R) + " " + x(B) + " " + x(R - s * .65) + " " + x(B));
+        named("topBridge", segment(L, T, R - s * .65, T));
+        named("middleStrike", segment(L, T + (B - T) * RECIPES.B.rules.middleStrikeY,
+                                      R, T + (B - T) * RECIPES.B.rules.middleStrikeY));
+        named("bottomBridge", segment(L, B, R - s * .65, B));
         break;
       case "C":
-        roundC();
+        named("leftShell", "M " + x(L + s * .65) + " " + x(T) +
+          " Q " + x(L) + " " + x(T) + " " + x(L) + " " + x(T + s * .65) +
+          " V " + x(B - s * .65) +
+          " Q " + x(L) + " " + x(B) + " " + x(L + s * .65) + " " + x(B));
+        named("topBridge", segment(L + s * .65, T, R - s * .65, T));
+        named("rightTopTerminal", "M " + x(R - s * .65) + " " + x(T) +
+          " Q " + x(R) + " " + x(T) + " " + x(R) + " " + x(T + s * .45));
+        named("bottomBridge", segment(L + s * .65, B, R - s * .65, B));
+        named("rightBottomTerminal", "M " + x(R - s * .65) + " " + x(B) +
+          " Q " + x(R) + " " + x(B) + " " + x(R) + " " + x(B - s * .45));
         break;
       case "D":
         stroke(L, T, L, B);
@@ -94,13 +118,22 @@
         stroke(L, T, R, T);
         stroke(L, M, R - s * .14, M);
         break;
-      case "G":
-        add("M " + x(R) + " " + x(T) +
-            " C " + x(X) + " " + x(T) + " " + x(L) + " " + x(T) + " " + x(L) + " " + x(T + s * 1.45) +
-            " V " + x(B - s * 1.45) +
-            " C " + x(L) + " " + x(B) + " " + x(X) + " " + x(B) + " " + x(R) + " " + x(B) +
-            " V " + x(M + s * .22) + " H " + x(L + s + counter * .52));
+      case "G": {
+        // Inherits the C open shell. Lower right return carries a middle spur.
+        named("leftShell", "M " + x(L + s * .65) + " " + x(T) +
+          " Q " + x(L) + " " + x(T) + " " + x(L) + " " + x(T + s * .65) +
+          " V " + x(B - s * .65) +
+          " Q " + x(L) + " " + x(B) + " " + x(L + s * .65) + " " + x(B));
+        named("topBridge", segment(L + s * .65, T, R - s * .65, T));
+        named("rightTopTerminal", "M " + x(R - s * .65) + " " + x(T) +
+          " Q " + x(R) + " " + x(T) + " " + x(R) + " " + x(T + s * .45));
+        named("bottomBridge", segment(L + s * .65, B, R - s * .65, B));
+        named("rightBottomTerminal", "M " + x(R - s * .65) + " " + x(B) +
+          " Q " + x(R) + " " + x(B) + " " + x(R) + " " + x(B - s * .65) +
+          " V " + x(M));
+        named("middleSpur", segment(R, M, L + s + counter * .53, M));
         break;
+      }
       case "H":
         stroke(L, T, L, B);
         stroke(R, T, R, B);
@@ -129,13 +162,12 @@
         add("M " + x(L) + " " + x(T) + " L " + x(X) + " " + x(T + s * 2.05) + " L " + x(R) + " " + x(T));
         break;
       case "N":
-        // Phoenix N is an uppercase-height lowercase n, NOT a diagonal N.
-        // The upper connector rounds into the right vertical stem.
-        stroke(L, T, L, B);
-        add("M " + x(L) + " " + x(T) +
-            " H " + x(R - s * .55) +
-            " Q " + x(R) + " " + x(T) + " " + x(R) + " " + x(T + s * .55) +
-            " V " + x(B));
+        // Tall lowercase-n construction. No diagonal, independent upright bars.
+        named("leftStem", segment(L, T, L, B));
+        named("topBridge", "M " + x(L) + " " + x(T) +
+          " H " + x(R - s * .65) +
+          " Q " + x(R) + " " + x(T) + " " + x(R) + " " + x(T + s * .65));
+        named("rightStem", segment(R, T + s * .65, R, B));
         break;
       case "O":
         roundO();
@@ -158,15 +190,21 @@
         stroke(L + s * .2, M, R, B);
         break;
       case "S":
-        // One continuous ribbon: no disconnected jump at the middle bowl.
-        add("M " + x(R) + " " + x(T) +
-            " H " + x(L + s * .86) +
-            " Q " + x(L) + " " + x(T) + " " + x(L) + " " + x(T + s * .9) +
-            " V " + x(q1) +
-            " C " + x(L) + " " + x(M - s * .35) + " " + x(R) + " " + x(M - s * .35) + " " + x(R) + " " + x(M + s * .48) +
-            " V " + x(q3) +
-            " Q " + x(R) + " " + x(B) + " " + x(R - s * .85) + " " + x(B) +
-            " H " + x(L));
+        // The S is two opposing structural shells tied by a middle strike.
+        // This is deliberately NOT a generic continuously interpolated spline.
+        named("upperLeftShell", "M " + x(L + s * .65) + " " + x(T) +
+          " Q " + x(L) + " " + x(T) + " " + x(L) + " " + x(T + s * .65) +
+          " V " + x(M));
+        named("topBridge", segment(L + s * .65, T, R - s * .65, T));
+        named("upperRightTerminal", "M " + x(R - s * .65) + " " + x(T) +
+          " Q " + x(R) + " " + x(T) + " " + x(R) + " " + x(T + s * .45));
+        named("middleStrike", segment(L, M, R, M));
+        named("lowerRightShell", "M " + x(R) + " " + x(M) +
+          " V " + x(B - s * .65) +
+          " Q " + x(R) + " " + x(B) + " " + x(R - s * .65) + " " + x(B));
+        named("bottomBridge", segment(L + s * .65, B, R - s * .65, B));
+        named("lowerLeftTerminal", "M " + x(L + s * .65) + " " + x(B) +
+          " Q " + x(L) + " " + x(B) + " " + x(L) + " " + x(B - s * .45));
         break;
       case "T":
         stroke(L, T, R, T);
@@ -247,8 +285,10 @@
       throw new Error("That preview height is too short for the calculated " +
         "stroke (" + n(stem) + " in). Increase the preview height; Phoenix's width math stays unchanged.");
     }
-    const y = stem * 1.15;
-    const boxH = height + 2 * y;
+    // The red frame is the glyph-height box: ink reaches both its edges.
+    // The half-stroke centerline offset (T/B above) keeps all ink within 0..height.
+    const y = 0;
+    const boxH = height;
     const guides = Boolean(options && options.guides);
     let xpos = calc.sideMargin, previousWord = null;
     let body = "";
