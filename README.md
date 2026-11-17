@@ -25,6 +25,7 @@ https://phx.jjrugesignco.com
 - Goblin-powered encouragement
 - Variable-grid SVG lettering preview (uppercase A-Z)
 - Red target-width boundary and construction-guide toggle
+- Editable preview-only letter height (automatic default: half of target width)
 
 ## Layout Styles
 
@@ -64,7 +65,9 @@ Version 2.1.0
 - Preserved a fixed calculated stroke thickness across rows, columns, and curves
 - Added optional counter/stroke construction guides and the red target-width box
 - Updated PWA cache and included width-consistency regression tests
-- Letter height is currently illustrative (7.6 times calculated stroke); the calculator accepts width only
+- Preview letter height defaults to half the target width (e.g. 16-inch line -> 8-inch tall letters), with a separate optional input for custom height; does not change any calculator measurements
+- Updated A and B to use horizontal Phoenix connectors and N to use a rounded uppercase-height lowercase-n construction, rather than a conventional diagonal N
+- Very short display heights can be geometrically impossible with the calculated stroke; the preview explains the issue without altering the layout math
 - Prototype glyph contours still require visual review before merging into production
 
 
