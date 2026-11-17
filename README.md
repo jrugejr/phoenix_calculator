@@ -23,6 +23,8 @@ https://phx.jjrugesignco.com
 - Offline support after first visit
 - PHX icon pack
 - Goblin-powered encouragement
+- Variable-grid SVG lettering preview (uppercase A-Z)
+- Red target-width boundary and construction-guide toggle
 
 ## Layout Styles
 
@@ -51,9 +53,20 @@ Uses an equal-unit approach.
 
 ## Current Version
 
-Version 2.0.0
+Version 2.1.0
 
 ## Changelog
+
+### v2.1.0 (preview branch)
+
+- Added an SVG layout workbench using the calculator's actual stem, counter, spacing, and margin measurements
+- Built uppercase A-Z as individually constructed strokes and curves, without loading or tracing a font
+- Preserved a fixed calculated stroke thickness across rows, columns, and curves
+- Added optional counter/stroke construction guides and the red target-width box
+- Updated PWA cache and included width-consistency regression tests
+- Letter height is currently illustrative (7.6 times calculated stroke); the calculator accepts width only
+- Prototype glyph contours still require visual review before merging into production
+
 
 ### v2.0.0
 
@@ -111,8 +124,8 @@ Version 2.0.0
 
 ## Planned Features
 
-- Visual layout preview
-- Grid-paper layout preview
+- Letter-height input and height-aware preview
+- More precise optical corrections and corner radii
 - Margin calculator
 - Additional lettering styles
 - Saved preferences
