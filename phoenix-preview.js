@@ -310,10 +310,6 @@
     try {
       const data = buildSvg(result, { guides: toggler && toggler.checked });
       container.innerHTML = data.svg;
-      const svg = container.querySelector("svg");
-      if (svg) {
-        svg.style.height = Math.max(150, Math.min(370, 620 / data.aspect)) + "px";
-      }
       const note = document.getElementById("previewStatus");
       if (note) note.textContent = "Red outline = requested width. Letter height is illustrative; Phoenix currently calculates width only.";
     } catch (err) {
