@@ -64,9 +64,10 @@ const PHOENIX_RECIPES = {
   X: { width: ["stem", "counter", "stem"], family: "crossing",
     fixed: ["upperLeft", "upperRight", "lowerLeft", "lowerRight"],
     stretch: ["centerJoin"], rules: { joinY: 0.50 } },
-  Y: { width: ["stem", "counter", "stem"], family: "splitTop",
-    fixed: ["upperLeftArm", "upperRightArm", "lowerStem"],
-    stretch: ["centerJoin"], rules: { splitTop: true } },
+  Y: { width: ["stem", "counter", "stem"], family: "splitLeftWithRightStem",
+    fixed: ["leftUpperStem", "leftLowerStem", "rightStem"],
+    stretch: ["upperJoin", "lowerJoin"],
+    rules: { splitLeft: true, curvedInnerTerminals: true, rightBottomReturn: true } },
   Z: { width: ["stem", "counter", "stem"], family: "diagonal",
     fixed: ["topLeft", "topRight", "bottomLeft", "bottomRight", "diagonalEnds"],
     stretch: ["diagonalCenter"], rules: { angleLocked: true } }
