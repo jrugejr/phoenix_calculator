@@ -21,7 +21,8 @@ test("all 26 uppercase glyphs have a measured construction", () => {
     const width = preview.glyphWidth(ch, 1.125, 0.875);
     assert.ok(width > 0, "Width of " + ch);
     const svg = preview.makeGlyph(ch, 1.125, 0.875, 8.55);
-    assert.ok(svg.includes('stroke-width="1.125"'), "Uniform stroke for " + ch);
+    assert.ok(svg.includes('stroke-width="1.125"') || svg.includes('fill="currentColor"'),
+      "Stroke-built or precisely filled paint for " + ch);
     assert.ok(svg.includes("<path "), "SVG path exists for " + ch);
     assert.ok(!/NaN|undefined/.test(svg), "Finite glyph geometry for " + ch);
   }
@@ -123,4 +124,40 @@ test("the red frame uses exactly the selected letter height", () => {
   assert.ok(out.svg.includes('transform="translate('), "Glyphs are placed in frame");
   assert.ok(!out.svg.includes('translate(0.'),
     "No assumption that left margin vanishes");
+});
+
+test("W is constructed from five measured stem/counter pieces", () => {
+  const svg = preview.makeGlyph("W", 1, .85, 8);
+  for (const name of ["leftStem", "middleStemSystem", "rightStem",
+                      "leftLowerCounter", "rightLowerCounter"]) {
+    assert.ok(svg.includes('data-phoenix-component="' + name + '"'), name);
+  }
+  assert.equal((svg.match(/fill="currentColor"/g) || []).length, 5);
+  assert.ok(svg.includes("V 8"), "W has full-height filled stems");
+});
+
+test("X has opposing upper and lower shells plus the middle connector", () => {
+  const svg = preview.makeGlyph("X", 1, .85, 8);
+  for (const name of ["upperLeft", "upperRight", "lowerLeft", "lowerRight", "centerJoin"]) {
+    assert.ok(svg.includes('data-phoenix-component="' + name + '"'), name);
+  }
+  assert.equal((svg.match(/fill="currentColor"/g) || []).length, 5);
+});
+
+test("Y has split left stem, two counter connectors, and bottom-curved right stem", () => {
+  const svg = preview.makeGlyph("Y", 1, .85, 8);
+  for (const name of ["leftUpperStem", "leftLowerStem", "rightStem", "upperJoin", "lowerJoin"]) {
+    assert.ok(svg.includes('data-phoenix-component="' + name + '"'), name);
+  }
+  assert.ok(svg.includes(' Q '), "Y terminals are curved inward");
+  assert.ok(svg.includes('V 8'), "Y includes full-height paint");
+  assert.equal((svg.match(/fill="currentColor"/g) || []).length, 5);
+});
+
+test("WXY fixed paint fills the exact top and bottom limits without extra vertical padding", () => {
+  const result = calc("WXY", 18, "smaller");
+  const out = preview.buildSvg(result, {height:9, guides:true});
+  assert.equal(out.height, 9);
+  assert.ok(out.svg.includes('<rect x="0" y="0" width="18" height="9"'));
+  assert.equal((out.svg.match(/fill="currentColor"/g) || []).length, 15);
 });
