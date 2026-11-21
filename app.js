@@ -271,7 +271,9 @@ function clearError() {
 
 function renderBreakdown(letters) {
   return letters
-    .map((item) => `<div>${item.char}: ${item.stems} stem(s), ${item.counters} counter(s)</div>`)
+    .map((item) => item.char === "T"
+      ? `<div>T: 1 stem, 1 counter total (½ counter on each side of the stem)</div>`
+      : `<div>${item.char}: ${item.stems} stem(s), ${item.counters} counter(s)</div>`)
     .join("");
 }
 
