@@ -23,6 +23,9 @@ https://phx.jjrugesignco.com
 - Offline support after first visit
 - PHX icon pack
 - Goblin-powered encouragement
+- Variable-grid SVG lettering preview (uppercase A-Z)
+- Red target-width boundary and construction-guide toggle
+- Editable preview-only letter height (automatic default: half of target width)
 
 ## Layout Styles
 
@@ -51,9 +54,28 @@ Uses an equal-unit approach.
 
 ## Current Version
 
-Version 2.0.0
+Version 2.1.0
 
 ## Changelog
+
+### v2.1.0 (preview branch)
+
+- Added an SVG layout workbench using the calculator's actual stem, counter, spacing, and margin measurements
+- Archived the sign painter's A–Z construction vocabulary in phoenix-recipes.js; glyph widths now come directly from these recipes
+- Converted A, B, C, G, N, and S to individually named modular structural components (the remaining glyphs retain provisional contours)
+- Implemented W, X, and Y with **solid filled, individually named structural pieces** based on reference sketches
+- Phoenix Y uses separated left upper/lower stems, upper/lower counter connectors, a continuous right stem, and curved inward terminals (rather than the generic fork-shape)
+- Added WXY and Y component diagrams for the next visual review; remaining letterforms still require reference-based calibration
+- The red boundary's top and bottom are exactly the requested letter-height edges; no internal vertical padding
+- Built uppercase A-Z as individually constructed strokes and curves, without loading or tracing a font
+- Preserved a fixed calculated stroke thickness across rows, columns, and curves
+- Added optional counter/stroke construction guides and the red target-width box
+- Updated PWA cache and included width-consistency regression tests
+- Preview letter height defaults to half the target width (e.g. 16-inch line -> 8-inch tall letters), with a separate optional input for custom height; does not change any calculator measurements
+- Updated A and B to use horizontal Phoenix connectors and N to use a rounded uppercase-height lowercase-n construction, rather than a conventional diagonal N
+- Very short display heights can be geometrically impossible with the calculated stroke; the preview explains the issue without altering the layout math
+- Prototype glyph contours still require visual review before merging into production
+
 
 ### v2.0.0
 
@@ -111,8 +133,8 @@ Version 2.0.0
 
 ## Planned Features
 
-- Visual layout preview
-- Grid-paper layout preview
+- Letter-height input and height-aware preview
+- More precise optical corrections and corner radii
 - Margin calculator
 - Additional lettering styles
 - Saved preferences
@@ -163,3 +185,25 @@ Venmo: **@RevJhonSoda**
 ## License
 
 MIT License
+
+
+## Phoenix Quads — actual FontStruct-based SVG workbench (draft)
+
+This branch now includes a **filled, modular A–Z renderer built from the provided FontStruct vector contours**:
+
+- Source: `phoenix-quads-data.js` (11-unit-high nominal grid; 186 source-font units per brick; some source glyphs carry an extra descender/upper brick)
+- Geometry: `phoenix-quads-renderer.js` preserves original quadratic curves and reconstructs each separated ink brick
+- Organizational spacer columns are thrown away; they do **not** become Phoenix counter columns
+- Real structural columns are independently sized using the existing calculator's locked stem and narrower/equal counter measurements
+- Horizontal connector rows retain **exactly one calculated stem** in height while vertical counter gaps stretch to fill the chosen preview letter height
+- All ink is filled SVG geometry, including original rounded terminals; no centerline-stroke cap gaps
+- T's half-brick top terminals, W and V's separated bottom foot cells, and Q/Z overhangs receive special handling
+- Finished Preview is the default; toggling **Construction view** adds the column guides and highlights imported counter connector bricks
+- **No change to any of the original Phoenix calculation formulas** or mobile installation instructions
+- The default preview letter height remains half of the requested target width, and the separate custom preview-height field is visual only.
+
+Review generated previews: [SIGNS](preview/SIGNS.svg) · [SIGNS with construction](preview/SIGNS-with-guides.svg) · [PHOENIX finished](preview/PHOENIX-finished.svg) · [PHOENIX construction](preview/PHOENIX-construction.svg) · [WXY](preview/WXY-construction.svg) · [SHOE REPAIR](preview/SHOE-REPAIR-finished.svg).
+
+Run `node --test tests/preview.test.cjs` to verify all 26 source glyphs, locked counter/stem relationships, measured widths, full-height geometry and exceptional letters.
+
+**Review gate:** FontStruct-assembled silhouettes require sign-painter visual approval before merging into `main`. The provided FontStruct ZIP includes a noncommercial font license; verify ownership and redistribution rights before public/commercial deployment.

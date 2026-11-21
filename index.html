@@ -19,7 +19,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png"> 
   
   <meta name="theme-color" content="#38a8e8" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=216" />
 </head>
 
 <body>
@@ -62,6 +62,16 @@
           </div>
 
           <div>
+            <label for="previewHeightInput">Preview Letter Height (Inches)</label>
+            <input id="previewHeightInput" type="number" step="0.125" min="0.125"
+              placeholder="Automatic: half the target width" inputmode="decimal" />
+            <p class="helper-text">
+              Optional visual setting only. Leave blank to preview lettering at half the target width
+              (e.g. a 16&quot; line uses 8&quot; tall letters).
+            </p>
+          </div>
+
+          <div>
             <label>Layout Style</label>
 
             <div class="counter-toggle" role="group" aria-label="Layout Style">
@@ -101,6 +111,19 @@
 
       <section id="results" class="card results">
         <h2 id="layoutTitle">Recommended Layout</h2>
+        <section class="preview-section" aria-label="Lettering layout workbench">
+          <div class="preview-toolbar">
+            <h3>Layout Workbench</h3>
+            <label class="preview-guides-toggle" for="previewGuides">
+              <input id="previewGuides" type="checkbox" />
+              Construction view (highlight connector pieces)
+            </label>
+          </div>
+          <div id="previewCanvas" class="preview-workbench" aria-live="polite"></div>
+          <p id="previewStatus" class="preview-note">
+            The red boundary represents your requested sign width.
+          </p>
+        </section>
 
         <div class="result-grid">
           <div class="result-row">
@@ -170,7 +193,11 @@
     </footer>
   </div>
 
-  <script src="app.js?v=200"></script>
+  <script src="phoenix-recipes.js?v=216"></script>
+  <script src="phoenix-quads-data.js?v=216"></script>
+  <script src="phoenix-quads-renderer.js?v=216"></script>
+  <script src="phoenix-preview.js?v=216"></script>
+  <script src="app.js?v=216"></script>
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("./service-worker.js");

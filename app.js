@@ -1,11 +1,11 @@
 // ============================================================
 // PHOENIX LAYOUT CALCULATOR
-// Browser Version 2.0.0
+// Browser Version 2.2.0
 // Unit-based Condensed / Gas Pipe / Phoenix inspired engine
 // ============================================================
 
 const APP_NAME = "Phoenix Layout Calculator";
-const APP_VERSION = "2.0.0";
+const APP_VERSION = "2.2.0";
 
 const HECKLES = [
   "Wow dude, really? Using the app again? Do the math yourself.",
@@ -271,7 +271,9 @@ function clearError() {
 
 function renderBreakdown(letters) {
   return letters
-    .map((item) => `<div>${item.char}: ${item.stems} stem(s), ${item.counters} counter(s)</div>`)
+    .map((item) => item.char === "T"
+      ? `<div>T: 1 stem, 1 counter total (½ counter on each side of the stem)</div>`
+      : `<div>${item.char}: ${item.stems} stem(s), ${item.counters} counter(s)</div>`)
     .join("");
 }
 
@@ -331,6 +333,8 @@ function renderLayout(result) {
   if (breakdownOutput) breakdownOutput.innerHTML = renderBreakdown(result.letters);
 
   document.getElementById("results").classList.add("active");
+
+  if (window.PhoenixPreview) window.PhoenixPreview.render(result);
 }
 
 function getSelectedCounterStyle() {
