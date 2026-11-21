@@ -103,15 +103,6 @@
       };
     }
     return function(x) {
-        const g=Math.max(0,Math.min(2,Math.round((x-origin-U/2)/(2*U))));
-        let f=(x-(origin+g*2*U))/U;
-        if(Math.abs(f)<.01)f=0;else if(Math.abs(f-1)<.01)f=1;
-        if(g===0)return cols[0].start+f*stem; // original arm is half a brick
-        if(g===2)return (width-stem/2)+f*stem;
-        return cols[1].start+f*stem;
-      };
-    }
-    return function(x) {
       // Every successive occupied brick is separated by one EMPTY brick.
       const group=Math.max(0,Math.min(slots.length-1,Math.round((x-origin-U/2)/(2*U))));
       let frac=(x-(origin+group*2*U))/U;
