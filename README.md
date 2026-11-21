@@ -185,3 +185,25 @@ Venmo: **@RevJhonSoda**
 ## License
 
 MIT License
+
+
+## Phoenix Quads — actual FontStruct-based SVG workbench (draft)
+
+This branch now includes a **filled, modular A–Z renderer built from the provided FontStruct vector contours**:
+
+- Source: `phoenix-quads-data.js` (11-unit-high nominal grid; 186 source-font units per brick; some source glyphs carry an extra descender/upper brick)
+- Geometry: `phoenix-quads-renderer.js` preserves original quadratic curves and reconstructs each separated ink brick
+- Organizational spacer columns are thrown away; they do **not** become Phoenix counter columns
+- Real structural columns are independently sized using the existing calculator's locked stem and narrower/equal counter measurements
+- Horizontal connector rows retain **exactly one calculated stem** in height while vertical counter gaps stretch to fill the chosen preview letter height
+- All ink is filled SVG geometry, including original rounded terminals; no centerline-stroke cap gaps
+- T's half-brick top terminals, W and V's separated bottom foot cells, and Q/Z overhangs receive special handling
+- Finished Preview is the default; toggling **Construction view** adds the column guides and highlights imported counter connector bricks
+- **No change to any of the original Phoenix calculation formulas** or mobile installation instructions
+- The default preview letter height remains half of the requested target width, and the separate custom preview-height field is visual only.
+
+Review generated previews: [SIGNS](preview/SIGNS.svg) · [SIGNS with construction](preview/SIGNS-with-guides.svg) · [PHOENIX finished](preview/PHOENIX-finished.svg) · [PHOENIX construction](preview/PHOENIX-construction.svg) · [WXY](preview/WXY-construction.svg) · [SHOE REPAIR](preview/SHOE-REPAIR-finished.svg).
+
+Run `node --test tests/preview.test.cjs` to verify all 26 source glyphs, locked counter/stem relationships, measured widths, full-height geometry and exceptional letters.
+
+**Review gate:** FontStruct-assembled silhouettes require sign-painter visual approval before merging into `main`. The provided FontStruct ZIP includes a noncommercial font license; verify ownership and redistribution rights before public/commercial deployment.
