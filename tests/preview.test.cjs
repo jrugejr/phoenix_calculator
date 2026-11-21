@@ -1,163 +1,150 @@
-// Run from the repository root with: node --test tests/preview.test.cjs
+// Run from repository root: node --test tests/preview.test.cjs
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const vm = require("node:vm");
-
-function loadSource(path, context) {
-  vm.runInContext(fs.readFileSync(path, "utf8"), context, { filename: path });
+const context = vm.createContext({window:{},document:{addEventListener(){}}});
+for(const path of ["app.js", "phoenix-recipes.js", "phoenix-quads-data.js",
+                   "phoenix-quads-renderer.js", "phoenix-preview.js"]) {
+  vm.runInContext(fs.readFileSync(path,"utf8"), context, {filename:path});
 }
+const calc=vm.runInContext("calculateLayout",context);
+const preview=context.window.PhoenixPreview;
+const quads=context.window.PhoenixQuads;
 
-const documentStub = { addEventListener() {} };
-const context = vm.createContext({ window: {}, document: documentStub });
-loadSource("app.js", context);
-loadSource("phoenix-recipes.js", context);
-loadSource("phoenix-preview.js", context);
-const calc = vm.runInContext("calculateLayout", context);
-const preview = context.window.PhoenixPreview;
-
-test("all 26 uppercase glyphs have a measured construction", () => {
-  for (const ch of "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
-    const width = preview.glyphWidth(ch, 1.125, 0.875);
-    assert.ok(width > 0, "Width of " + ch);
-    const svg = preview.makeGlyph(ch, 1.125, 0.875, 8.55);
-    assert.ok(svg.includes('stroke-width="1.125"') || svg.includes('fill="currentColor"'),
-      "Stroke-built or precisely filled paint for " + ch);
-    assert.ok(svg.includes("<path "), "SVG path exists for " + ch);
-    assert.ok(!/NaN|undefined/.test(svg), "Finite glyph geometry for " + ch);
+test("source is the complete original eleven-unit uppercase construction alphabet",()=>{
+  assert.equal(quads.sourceUnit,186);
+  for(const ch of "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
+    const parts=quads.inspect(ch);
+    assert.ok(parts.length>0,ch+" has source contours");
+    assert.ok(parts.every(p=>Number.isFinite(p.bounds.xmin)&&Number.isFinite(p.bounds.ymax)),ch+" has measured outline");
   }
 });
 
-test("rendered widths exactly match original Phoenix calculations", () => {
-  const words = ["SIGNS", "PHOENIX", "SHOE REPAIR", "OSGN", "MOW", "I", "G"];
-  for (const word of words) {
-    for (const style of ["smaller", "equal"]) {
-      const result = calc(word, 18, style);
-      assert.ok(result.recommended, "Calculator recommendation for " + word);
-      // Single-letter layouts can produce stems wider than half the target
-      // width, so use a large enough *display-only* height for width tests.
-      const displayHeight = Math.max(result.targetWidth / 2, result.recommended.stem * 3.5);
-      const plain = preview.buildSvg(result, { guides: false, height: displayHeight });
-      const guides = preview.buildSvg(result, { guides: true, height: displayHeight });
-      assert.ok(Math.abs(plain.width - result.recommended.finalWidth) < 0.000001);
-      assert.equal(plain.width, guides.width, "Guides don't affect geometry");
-      assert.equal((plain.svg.match(/transform="translate\(/g) || []).length,
-        result.letters.length, "One glyph per letter");
-      assert.ok(!/NaN|undefined/.test(plain.svg), "Finite SVG values");
-      assert.ok(plain.svg.includes('stroke="#f57477"'), "Target box present");
+test("empty FontStruct separator bricks are discarded rather than counted as counters",()=>{
+  assert.equal(preview.glyphWidth("A",1,.875),2.875);
+  assert.equal(preview.glyphWidth("E",1,.875),1.875);
+  assert.equal(preview.glyphWidth("M",1,.875),4.75);
+  assert.equal(preview.glyphWidth("W",1,.875),4.75);
+  // Three occupied source bricks for A; only ONE actual counter slot.
+  const svg=quads.renderGlyph("A",1,.875,9);
+  assert.ok(svg.includes('data-quad-column="0"'));
+  assert.ok(svg.includes('data-quad-column="1"'));
+  assert.ok(svg.includes('data-quad-column="2"'));
+  assert.ok(!svg.includes('stroke-width='));
+});
+
+test("all A-Z glyphs derive from original filled FontStruct vector contours",()=>{
+  for(const ch of "ABCDEFGHIJKLMNOPQRSTUVWXYZ"){
+    const svg=quads.renderGlyph(ch,1,.875,9);
+    assert.ok(svg.includes('data-quad-glyph="'+ch+'"'),ch+" has imported paths");
+    assert.ok(svg.includes('fill="currentColor"'),ch+" is actually filled");
+    assert.ok(!/NaN|undefined|Infinity/.test(svg),ch+" coordinates finite");
+    assert.ok(!svg.includes('stroke-width='),ch+" does not use centerline strokes");
+  }
+});
+
+test("actual source curves are retained rather than drawn as generic splines",()=>{
+  for(const ch of ["A","B","C","G","N","O","P","R","S","X","Y"]){
+    const svg=quads.renderGlyph(ch,1,.875,9);
+    assert.ok(svg.includes("Q"),ch+" retains FontStruct quadratic curves");
+  }
+  const n=quads.renderGlyph("N",1,.875,9);
+  assert.ok(n.includes('data-quad-role="counter-connector"'),"N has top counter bridge");
+  assert.ok(!n.includes('data-quad-role="diagonal"'),"N remains an arch, not diagonal");
+});
+
+test("height changes only the vertical construction, not horizontal widths or stroke rows",()=>{
+  const a=quads.renderGlyph("A",1,.875,8);
+  const b=quads.renderGlyph("A",1,.875,13);
+  // The crossbar is exactly one stem thick in either preview height.
+  function barHeight(svg) {
+    const match=svg.match(/data-quad-role="counter-connector" d="M[^ ]+ ([0-9.]+) V([0-9.]+)/);
+    assert.ok(match,"counter bar available");
+    return Math.abs(Number(match[1])-Number(match[2]));
+  }
+  assert.ok(Math.abs(barHeight(a)-1)<0.0001);
+  assert.ok(Math.abs(barHeight(b)-1)<0.0001);
+  assert.ok(a.includes("M0 8 ")||a.includes("M0 8V"),"left stem reaches bottom");
+  assert.ok(b.includes("M0 13 ")||b.includes("M0 13V"),"left stem reaches bottom after stretching");
+});
+
+test("construction mode colors actual counter connectors without altering geometry",()=>{
+  const finished=quads.renderGlyph("S",1,.875,9,{guides:false});
+  const guide=quads.renderGlyph("S",1,.875,9,{guides:true});
+  assert.ok(guide.includes('data-quad-role="counter-connector"'));
+  assert.ok(guide.includes('fill="#a6d777"'));
+  assert.equal((guide.match(/data-quad-glyph=/g)||[]).length,
+               (finished.match(/data-quad-glyph=/g)||[]).length);
+  assert.equal(guide.replaceAll('fill="#a6d777"','fill="currentColor"'),finished);
+});
+
+test("special T has centered full-width stem with two half-brick top arms",()=>{
+  const glyph=quads.renderGlyph("T",1,.875,9);
+  assert.ok(glyph.includes('M0.4375 9 V0 H1.4375 V9'),"center stem correctly centered");
+  assert.ok(glyph.includes('data-quad-role="topSpan"'),"full top bar constructed");
+  assert.ok(!glyph.includes('M-'),"ink remains within letter width");
+});
+
+test("W and V vertical stems meet their bottom counter bricks with filled feet",()=>{
+  for(const ch of ["W","V"]) {
+    const glyph=quads.renderGlyph(ch,1,.875,9);
+    assert.equal((glyph.match(/data-quad-role="bottomStemFoot"/g)||[]).length,
+                 ch==="W"?3:2);
+    assert.ok(glyph.includes("V9"),"foot reaches actual baseline");
+  }
+});
+
+test("counter columns never exceed stroke width in actual calculator candidates",()=>{
+  for(const word of ["SIGNS","PHOENIX","WXY","SHOE REPAIR","ABCD","NOW"]) {
+    for(const style of ["smaller","equal"]) {
+      const result=calc(word,18,style);
+      assert.ok(result.recommended);
+      assert.ok(result.recommended.counter>0);
+      assert.ok(result.recommended.counter<=result.recommended.stem,
+        word+" "+style+" counter max");
+      if(style==="equal")assert.equal(result.recommended.counter,result.recommended.stem);
     }
   }
 });
 
-test("counter width changes glyph advance, not stroke thickness", () => {
-  const a = preview.makeGlyph("O", 1, 0.8, 7.6);
-  const b = preview.makeGlyph("O", 1, 0.95, 7.6);
-  assert.equal(preview.glyphWidth("O", 1, .8), 2.8);
-  assert.equal(preview.glyphWidth("O", 1, .95), 2.95);
-  assert.ok(a.includes('stroke-width="1"'));
-  assert.ok(b.includes('stroke-width="1"'));
-});
-
-test("bad or missing inputs fail clearly", () => {
-  assert.throws(() => preview.glyphWidth("?", 1, 1), /No preview glyph/);
-  assert.throws(() => preview.buildSvg(null, {}), /calculated Phoenix layout/);
-});
-
-test("automatic preview height is half the requested width; custom height is independent", () => {
-  const result = calc("SIGNS", 16, "smaller");
-  assert.ok(result.recommended);
-  const auto = preview.buildSvg(result, { guides: false });
-  const custom = preview.buildSvg(result, { guides: false, height: 12 });
-  assert.equal(auto.height, 8);
-  assert.equal(custom.height, 12);
-  assert.equal(auto.width, custom.width);
-  assert.equal(auto.width, result.recommended.finalWidth);
-});
-
-test("the Phoenix N is an arch with a continuous top connector, not a diagonal", () => {
-  const svg = preview.makeGlyph("N", 1, 0.85, 8);
-  assert.equal((svg.match(/<path /g) || []).length, 3, "three components: left stem, rounded bridge and right stem");
-  for (const name of ["leftStem", "topBridge", "rightStem"]) {
-    assert.ok(svg.includes('data-phoenix-component="' + name + '"'), "N uses " + name);
+test("layout width stays identical to the original Phoenix calculator in both modes",()=>{
+  let passed=0;
+  for(const word of ["ABCDEFGHIJKLMNOPQRSTUVWXYZ","PHOENIX","SIGNS","WXY",
+                      "SHOE REPAIR","OPEN","T","W","Q","Z","G","Y"]) {
+    for(const width of [16,18,42]) {
+      for(const style of ["smaller","equal"]) {
+        const result=calc(word,width,style);
+        assert.ok(result.recommended);
+        const height=Math.max(width/2,result.recommended.stem*4.75);
+        const svg=preview.buildSvg(result,{height});
+        const guide=preview.buildSvg(result,{height,guides:true});
+        assert.ok(Math.abs(svg.width-result.recommended.finalWidth)<0.00001);
+        assert.equal(svg.width,guide.width);
+        assert.equal(svg.height,height);
+        assert.ok(!/NaN|undefined|Infinity/.test(svg.svg));
+        assert.equal((svg.svg.match(/transform="translate\(/g)||[]).length,
+                     result.letters.length);
+        passed++;
+      }
+    }
   }
-  assert.ok(svg.includes(" H "), "N has a horizontal top connector");
-  assert.ok(svg.includes(" Q "), "N has rounded top right shoulder");
+  assert.equal(passed,72);
 });
 
-test("the Phoenix A and B use structural top and bottom bar rules", () => {
-  const a = preview.makeGlyph("A", 1, .85, 8);
-  const b = preview.makeGlyph("B", 1, .85, 8);
-  assert.equal((a.match(/<path /g) || []).length, 4);
-  assert.equal((b.match(/<path /g) || []).length, 5);
+test("red frame consumes the full user-selected letter height",()=>{
+  const result=calc("SIGNS",16,"smaller");
+  const auto=preview.buildSvg(result);
+  const custom=preview.buildSvg(result,{height:12});
+  assert.equal(auto.height,8);
+  assert.equal(custom.height,12);
+  assert.equal(auto.width,custom.width);
+  assert.ok(auto.svg.includes('<rect x="0" y="0" width="16" height="8"'));
+  assert.ok(custom.svg.includes('<rect x="0" y="0" width="16" height="12"'));
 });
 
-test("too-short preview heights are rejected instead of changing the stem", () => {
-  const result = calc("S", 16, "smaller");
-  assert.throws(() => preview.buildSvg(result, {}), /too short/);
-  assert.ok(result.recommended.stem > 0, "original calculator remains valid");
-});
-
-test("S is made from opposing shells with named connectors, not a generic spline", () => {
-  const svg = preview.makeGlyph("S", 1, .875, 8);
-  const components = [
-    "upperLeftShell", "upperRightTerminal", "lowerLeftTerminal",
-    "lowerRightShell", "topBridge", "middleStrike", "bottomBridge"
-  ];
-  for (const name of components) {
-    assert.ok(svg.includes('data-phoenix-component="' + name + '"'), "S contains " + name);
-  }
-  assert.equal((svg.match(/<path /g) || []).length, 7);
-});
-
-test("Phoenix A is assembled as left, center, right structural groups", () => {
-  const svg = preview.makeGlyph("A", 1, .875, 8);
-  for (const name of ["leftStemCap", "centerBridge", "crossbar", "rightStemCap"]) {
-    assert.ok(svg.includes('data-phoenix-component="' + name + '"'), "A uses " + name);
-  }
-});
-
-test("the red frame uses exactly the selected letter height", () => {
-  const result = calc("SIGNS", 16, "smaller");
-  const out = preview.buildSvg(result, { height: 8 });
-  assert.equal(out.height, 8);
-  assert.ok(out.svg.includes('<rect x="0" y="0" width="16" height="8"'), "Red frame exactly 16 by 8");
-  assert.ok(out.svg.includes('transform="translate('), "Glyphs are placed in frame");
-  assert.ok(!out.svg.includes('translate(0.'),
-    "No assumption that left margin vanishes");
-});
-
-test("W is constructed from five measured stem/counter pieces", () => {
-  const svg = preview.makeGlyph("W", 1, .85, 8);
-  for (const name of ["leftStem", "middleStemSystem", "rightStem",
-                      "leftLowerCounter", "rightLowerCounter"]) {
-    assert.ok(svg.includes('data-phoenix-component="' + name + '"'), name);
-  }
-  assert.equal((svg.match(/fill="currentColor"/g) || []).length, 5);
-  assert.ok(svg.includes("V 8"), "W has full-height filled stems");
-});
-
-test("X has opposing upper and lower shells plus the middle connector", () => {
-  const svg = preview.makeGlyph("X", 1, .85, 8);
-  for (const name of ["upperLeft", "upperRight", "lowerLeft", "lowerRight", "centerJoin"]) {
-    assert.ok(svg.includes('data-phoenix-component="' + name + '"'), name);
-  }
-  assert.equal((svg.match(/fill="currentColor"/g) || []).length, 5);
-});
-
-test("Y has split left stem, two counter connectors, and bottom-curved right stem", () => {
-  const svg = preview.makeGlyph("Y", 1, .85, 8);
-  for (const name of ["leftUpperStem", "leftLowerStem", "rightStem", "upperJoin", "lowerJoin"]) {
-    assert.ok(svg.includes('data-phoenix-component="' + name + '"'), name);
-  }
-  assert.ok(svg.includes(' Q '), "Y terminals are curved inward");
-  assert.ok(svg.includes('V 8'), "Y includes full-height paint");
-  assert.equal((svg.match(/fill="currentColor"/g) || []).length, 5);
-});
-
-test("WXY fixed paint fills the exact top and bottom limits without extra vertical padding", () => {
-  const result = calc("WXY", 18, "smaller");
-  const out = preview.buildSvg(result, {height:9, guides:true});
-  assert.equal(out.height, 9);
-  assert.ok(out.svg.includes('<rect x="0" y="0" width="18" height="9"'));
-  assert.equal((out.svg.match(/fill="currentColor"/g) || []).length, 15);
+test("invalid input and too-short requested glyph height are rejected explicitly",()=>{
+  assert.throws(()=>preview.glyphWidth("?",1,1),/No preview glyph/);
+  assert.throws(()=>preview.buildSvg(null,{}),/calculated Phoenix layout/);
+  assert.throws(()=>quads.renderGlyph("A",1,.875,2),/too short/);
 });
