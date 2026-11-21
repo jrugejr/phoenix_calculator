@@ -19,7 +19,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png"> 
   
   <meta name="theme-color" content="#38a8e8" />
-  <link rel="stylesheet" href="style.css?v=213" />
+  <link rel="stylesheet" href="style.css?v=214" />
 </head>
 
 <body>
@@ -116,7 +116,7 @@
             <h3>Layout Workbench</h3>
             <label class="preview-guides-toggle" for="previewGuides">
               <input id="previewGuides" type="checkbox" />
-              Show construction guides
+              Construction view (highlight connector pieces)
             </label>
           </div>
           <div id="previewCanvas" class="preview-workbench" aria-live="polite"></div>
@@ -193,9 +193,11 @@
     </footer>
   </div>
 
-  <script src="phoenix-recipes.js?v=213"></script>
-  <script src="phoenix-preview.js?v=213"></script>
-  <script src="app.js?v=213"></script>
+  <script src="phoenix-recipes.js?v=214"></script>
+  <script src="phoenix-quads-data.js?v=214"></script>
+  <script src="phoenix-quads-renderer.js?v=214"></script>
+  <script src="phoenix-preview.js?v=214"></script>
+  <script src="app.js?v=214"></script>
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("./service-worker.js");
