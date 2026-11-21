@@ -94,8 +94,15 @@
     for(const slot of slots){ starts.push(running);running+=(slot==="stem"?stem:counter); }
     if(ch==="T") {
       const width=running, center=(width-stem)/2;
-      const cols=[{start:0,width:stem/2},{start:center,width:stem},{start:width-stem/2,width:stem/2}];
+      // T is exceptional: two HALF bricks at the outer ends and a full
+      // center stem. The blank columns do not represent actual counters.
       return function(x) {
+        if(x<=-372) return ((x+465)/93)*(stem/2);
+        if(x>=186) return width-stem/2+((x-186)/93)*(stem/2);
+        return center+((x+186)/186)*stem;
+      };
+    }
+    return function(x) {
         const g=Math.max(0,Math.min(2,Math.round((x-origin-U/2)/(2*U))));
         let f=(x-(origin+g*2*U))/U;
         if(Math.abs(f)<.01)f=0;else if(Math.abs(f-1)<.01)f=1;
@@ -138,11 +145,25 @@
       const b=bounds(cmds);
       const centerX=(b.xmin+b.xmax)/2;
       const group=Math.max(0,Math.min(recipe.width.length-1,Math.round((centerX-source.origin-U/2)/(2*U))));
-      const counterCell=recipe.width[group]==="counter";
+      const counterCell=ch==="T"?false:recipe.width[group]==="counter";
       body+='<path data-quad-glyph="'+ch+'" data-quad-column="'+group+
         '" data-quad-role="'+(counterCell?"counter-connector":"stem")+
         '" d="'+contour(cmds,xmap,ymap)+'" fill="'+(guides&&counterCell?"#a6d777":"currentColor")+'"/>';
       i++;
+    }
+    // FontStruct W and V use a bottom row of separate counter blocks.
+    // Complete the adjoining stem feet so they join as one filled silhouette,
+    // rather than meeting at isolated corner points.
+    if(ch==="W"||ch==="V") {
+      const positions=[];let at=0;
+      for(const col of recipe.width) {
+        if(col==="stem")positions.push(at);
+        at+=col==="stem"?stem:counter;
+      }
+      for(const left of positions) {
+        body+='<path data-quad-glyph="'+ch+'" data-quad-role="bottomStemFoot" d="M'+fmt(left)+' '+fmt(height-stem)+
+          ' H'+fmt(left+stem)+' V'+fmt(height)+' H'+fmt(left)+'Z" fill="currentColor"/>';
+      }
     }
     // T's separated half-width terminal bricks are finished by one
     // measured top span; empty organizational columns never become gaps.
