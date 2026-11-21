@@ -148,3 +148,14 @@ test("invalid input and too-short requested glyph height are rejected explicitly
   assert.throws(()=>preview.buildSvg(null,{}),/calculated Phoenix layout/);
   assert.throws(()=>quads.renderGlyph("A",1,.875,2),/too short/);
 });
+
+
+test("T breakdown explains that one counter is split across the two shoulders",()=>{
+  const t=calc("T",18,"smaller");
+  assert.equal(t.letters.length,1);
+  assert.equal(t.letters[0].stems,1);
+  assert.equal(t.letters[0].counters,1);
+  const html=vm.runInContext("renderBreakdown",context)(t.letters);
+  assert.ok(html.includes("1 counter total"));
+  assert.ok(html.includes("½ counter on each side"));
+});
