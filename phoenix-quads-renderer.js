@@ -100,7 +100,7 @@
         let f=(x-(origin+g*2*U))/U;
         if(Math.abs(f)<.01)f=0;else if(Math.abs(f-1)<.01)f=1;
         if(g===0)return cols[0].start+f*stem; // original arm is half a brick
-        if(g===2)return cols[2].start+(f-.5)*stem;
+        if(g===2)return (width-stem/2)+f*stem;
         return cols[1].start+f*stem;
       };
     }
@@ -143,6 +143,13 @@
         '" data-quad-role="'+(counterCell?"counter-connector":"stem")+
         '" d="'+contour(cmds,xmap,ymap)+'" fill="'+(guides&&counterCell?"#a6d777":"currentColor")+'"/>';
       i++;
+    }
+    // T's separated half-width terminal bricks are finished by one
+    // measured top span; empty organizational columns never become gaps.
+    if(ch==="T") {
+      const w=recipe.width.reduce((total,c)=>total+(c==="stem"?stem:counter),0);
+      body+='<path data-quad-glyph="T" data-quad-role="topSpan" d="M0 0 H'+fmt(w)+
+        ' V'+fmt(stem)+' H0Z" fill="'+(guides?"#a6d777":"currentColor")+'"/>';
     }
     return body;
   }
