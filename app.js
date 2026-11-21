@@ -1,11 +1,11 @@
 // ============================================================
 // PHOENIX LAYOUT CALCULATOR
-// Browser Version 2.1.0
+// Browser Version 2.2.0
 // Unit-based Condensed / Gas Pipe / Phoenix inspired engine
 // ============================================================
 
 const APP_NAME = "Phoenix Layout Calculator";
-const APP_VERSION = "2.1.0";
+const APP_VERSION = "2.2.0";
 
 const HECKLES = [
   "Wow dude, really? Using the app again? Do the math yourself.",
